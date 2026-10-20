@@ -25,6 +25,9 @@ parts/
 *.kicad_sch.bak
 *.kicad_pcb.bak
 
+# ===== 本工作区内部目录（笔记/记忆，不进仓库）=====
+.workbuddy/
+
 # ===== 编辑器/系统文件 =====
 .DS_Store
 Thumbs.db
