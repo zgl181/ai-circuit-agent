@@ -1,0 +1,32 @@
+# ===== Python 虚拟环境 =====
+.venv/
+venv/
+env/
+
+# ===== Python 缓存 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ===== 依赖与密钥（千万别上传！）=====
+.env
+*.env
+.env.*
+
+# ===== 大文件/下载缓存（KiCad 安装包等）=====
+downloads/
+parts/
+*.exe
+*.msi
+*.zip
+
+# ===== KiCad 生成产物（按需保留，初学可忽略）=====
+*.kicad_sch.bak
+*.kicad_pcb.bak
+
+# ===== 编辑器/系统文件 =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
