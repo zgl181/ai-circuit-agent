@@ -13,6 +13,7 @@ __pycache__/
 .env
 *.env
 .env.*
+!.env.example
 
 # ===== 大文件/下载缓存（KiCad 安装包等）=====
 downloads/
