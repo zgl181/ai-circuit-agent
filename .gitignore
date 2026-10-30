@@ -35,6 +35,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Windows 保留名异常文件（偶发产生，勿入库）
+nul
+
 # ===== 生成产物：只保留一份示例(json/net/kicad_sch)，预览图与旧版本不入库 =====
 outputs/preview/
 outputs/v1_ledblink/
