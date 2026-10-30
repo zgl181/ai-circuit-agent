@@ -1,0 +1,128 @@
+{
+  "board": "双LED闪烁电路",
+  "components": [
+    {
+      "ref": "LED1",
+      "type": "LED",
+      "value": "红色",
+      "package": "0805",
+      "quantity": 1,
+      "note": ""
+    },
+    {
+      "ref": "LED2",
+      "type": "LED",
+      "value": "红色",
+      "package": "0805",
+      "quantity": 1,
+      "note": ""
+    },
+    {
+      "ref": "R1",
+      "type": "电阻",
+      "value": "220Ω",
+      "package": "0805",
+      "quantity": 1,
+      "note": "LED1限流"
+    },
+    {
+      "ref": "R2",
+      "type": "电阻",
+      "value": "220Ω",
+      "package": "0805",
+      "quantity": 1,
+      "note": "LED2限流"
+    },
+    {
+      "ref": "SW1",
+      "type": "开关",
+      "value": "轻触开关",
+      "package": "6x6mm",
+      "quantity": 1,
+      "note": ""
+    },
+    {
+      "ref": "BAT1",
+      "type": "连接器",
+      "value": "2节电池座",
+      "package": "2xAA",
+      "quantity": 1,
+      "note": "3V供电"
+    }
+  ],
+  "nets": [
+    {
+      "name": "VCC",
+      "nodes": [
+        {
+          "ref": "BAT1",
+          "pin": "1"
+        },
+        {
+          "ref": "SW1",
+          "pin": "1"
+        }
+      ]
+    },
+    {
+      "name": "GND",
+      "nodes": [
+        {
+          "ref": "BAT1",
+          "pin": "2"
+        },
+        {
+          "ref": "LED1",
+          "pin": "2"
+        },
+        {
+          "ref": "LED2",
+          "pin": "2"
+        }
+      ]
+    },
+    {
+      "name": "SW_OUT",
+      "nodes": [
+        {
+          "ref": "SW1",
+          "pin": "2"
+        },
+        {
+          "ref": "R1",
+          "pin": "1"
+        },
+        {
+          "ref": "R2",
+          "pin": "1"
+        }
+      ]
+    },
+    {
+      "name": "LED1_NET",
+      "nodes": [
+        {
+          "ref": "R1",
+          "pin": "2"
+        },
+        {
+          "ref": "LED1",
+          "pin": "1"
+        }
+      ]
+    },
+    {
+      "name": "LED2_NET",
+      "nodes": [
+        {
+          "ref": "R2",
+          "pin": "2"
+        },
+        {
+          "ref": "LED2",
+          "pin": "1"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# LLM 调用（学校平台为 OpenAI 兼容接口）
+openai>=1.0
+python-dotenv>=1.0
+
+# MongoDB 后端（本地 mongod；未安装时自动退化为 mongomock）
+pymongo>=4.0
+mongomock>=4.0

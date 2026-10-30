@@ -1,0 +1,769 @@
+(kicad_sch (version 20231120) (generator "eeschema") (generator_version "8.0")
+  (uuid 22703796-416f-4c95-9f8f-f1dc697b6d5f)
+
+  (paper "A4")
+
+  (title_block
+    (title "双LED闪烁电路")
+    (date "2026-10-30")
+    (rev "W3-demo")
+    (company "AI Agent 电路板设计"))
+
+  (lib_symbols
+(symbol "Device:LED"
+		(pin_numbers hide)
+		(pin_names
+			(offset 1.016) hide)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "D"
+			(at 0 2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LED"
+			(at 0 -2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Light emitting diode"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "LED diode"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "LED_0_1"
+			(polyline
+				(pts
+					(xy -1.27 -1.27) (xy -1.27 1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.27 0) (xy 1.27 0)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+				)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -3.048 -0.762) (xy -4.572 -2.286) (xy -3.81 -2.286) (xy -4.572 -2.286) (xy -4.572 -1.524)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.778 -0.762) (xy -3.302 -2.286) (xy -2.54 -2.286) (xy -3.302 -2.286) (xy -3.302 -1.524)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "LED_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+	)
+(symbol "Device:R"
+		(pin_numbers hide)
+		(pin_names
+			(offset 0)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "R"
+			(at 2.032 0 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "R"
+			(at 0 0 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -1.778 0 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "R res resistor"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_fp_filters" "R_*"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "R_0_1"
+			(rectangle
+				(start -1.016 -2.54)
+				(end 1.016 2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "R_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+	)
+(symbol "Switch:SW_Push"
+		(pin_numbers hide)
+		(pin_names
+			(offset 1.016) hide)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "SW"
+			(at 1.27 2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SW_Push"
+			(at 0 -1.524 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 5.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 5.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Push button switch, generic, two pins"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "switch normally-open pushbutton push-button"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "SW_Push_0_1"
+			(circle
+				(center -2.032 0)
+				(radius 0.508)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 1.27) (xy 0 3.048)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 2.54 1.27) (xy -2.54 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(circle
+				(center 2.032 0)
+				(radius 0.508)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 5.08 0 180)
+				(length 2.54)
+				(name "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+	)
+(symbol "Connector_Generic:Conn_01x02"
+		(pin_names
+			(offset 1.016) hide)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "J"
+			(at 0 2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x02"
+			(at 0 -5.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "connector"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_fp_filters" "Connector*:*_1x??_*"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "Conn_01x02_1_1"
+			(rectangle
+				(start -1.27 -2.413)
+				(end 0 -2.667)
+				(stroke
+					(width 0.1524)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(rectangle
+				(start -1.27 0.127)
+				(end 0 -0.127)
+				(stroke
+					(width 0.1524)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(rectangle
+				(start -1.27 1.27)
+				(end 1.27 -3.81)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type background)
+				)
+			)
+			(pin passive line
+				(at -5.08 0 0)
+				(length 3.81)
+				(name "Pin_1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at -5.08 -2.54 0)
+				(length 3.81)
+				(name "Pin_2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+	)
+  )
+
+  (symbol
+    (lib_id "Device:LED")
+    (at 40.0 45.0 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "e3749c4d-a62a-414d-8873-ccbd67086ed4")
+    (property "Reference" "LED1" (id 0) (at 45.0 30.0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "红色" (id 1) (at 45.0 60.0 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "0805" (id 2) (at 40.0 45.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (pin "1"
+        (uuid "16a41b1b-e9e8-45dd-9a1d-19ddc713d33b")
+    )
+    (pin "2"
+        (uuid "ab054373-1611-4dca-a891-5f1927c59ceb")
+    )
+    (instances
+      (project "双LED闪烁电路"
+        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+          (reference "LED1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Device:LED")
+    (at 125.0 45.0 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "9d87b63c-7e2a-4ef0-a8e0-4a71f3a1b68d")
+    (property "Reference" "LED2" (id 0) (at 130.0 30.0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "红色" (id 1) (at 130.0 60.0 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "0805" (id 2) (at 125.0 45.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (pin "1"
+        (uuid "a94d3c09-f7a2-4818-930d-85489577814e")
+    )
+    (pin "2"
+        (uuid "45ced8c2-5740-4d43-bf73-58387808ce02")
+    )
+    (instances
+      (project "双LED闪烁电路"
+        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+          (reference "LED2")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Device:R")
+    (at 210.0 45.0 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "dd1ba89d-949b-494c-9f37-cbcbeedbe78f")
+    (property "Reference" "R1" (id 0) (at 215.0 30.0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "220Ω" (id 1) (at 215.0 60.0 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "0805" (id 2) (at 210.0 45.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (pin "1"
+        (uuid "180ed242-0b6a-4d8c-869e-c48c28c6fe8b")
+    )
+    (pin "2"
+        (uuid "47c6fe07-33cf-4cca-9488-27d311042090")
+    )
+    (instances
+      (project "双LED闪烁电路"
+        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+          (reference "R1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Device:R")
+    (at 40.0 115.0 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "e3f508ca-c487-4ead-8117-b8e414139aaa")
+    (property "Reference" "R2" (id 0) (at 45.0 100.0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "220Ω" (id 1) (at 45.0 130.0 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "0805" (id 2) (at 40.0 115.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (pin "1"
+        (uuid "99b04117-14e6-4735-b7c0-e7489d8ba324")
+    )
+    (pin "2"
+        (uuid "10d45426-5475-4dc2-b032-8a8cc9456566")
+    )
+    (instances
+      (project "双LED闪烁电路"
+        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+          (reference "R2")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Switch:SW_Push")
+    (at 125.0 115.0 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "6cb4a6ef-4d19-4bb2-9cec-7bd9d25b216d")
+    (property "Reference" "SW1" (id 0) (at 130.0 100.0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "轻触开关" (id 1) (at 130.0 130.0 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "6x6mm" (id 2) (at 125.0 115.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (pin "1"
+        (uuid "539b6cf6-e386-4b60-b482-a8cf276b5f2e")
+    )
+    (pin "2"
+        (uuid "42996230-0ab9-417f-a1dd-d9877ff950a1")
+    )
+    (instances
+      (project "双LED闪烁电路"
+        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+          (reference "SW1")
+          (unit 1)
+        )
+      )
+    )
+  )
+  (symbol
+    (lib_id "Connector_Generic:Conn_01x02")
+    (at 210.0 115.0 0)
+    (unit 1)
+    (exclude_from_sim no)
+    (in_bom yes)
+    (on_board yes)
+    (dnp no)
+    (uuid "b0ecb704-1c87-4259-82e9-89c4af8e98b1")
+    (property "Reference" "BAT1" (id 0) (at 215.0 100.0 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "2节电池座" (id 1) (at 215.0 130.0 0) (effects (font (size 1.27 1.27))))
+    (property "Footprint" "2xAA" (id 2) (at 210.0 115.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (pin "1"
+        (uuid "6975c9da-b6ce-4ed9-8b7e-3c2c1958b2cd")
+    )
+    (pin "2"
+        (uuid "c2a9728d-a8e2-411e-a2eb-26418bd3df8c")
+    )
+    (instances
+      (project "双LED闪烁电路"
+        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+          (reference "BAT1")
+          (unit 1)
+        )
+      )
+    )
+  )
+
+  (wire (pts (xy 204.92 115.00) (xy 119.92 115.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "1eda96a6-18c7-4917-8448-93eaa6e56c8c"))
+  (label "VCC" (at 162.42 115.00 0) (effects (font (size 1.27 1.27))) (uuid "82469002-46d6-4105-8963-c297fe1e9da8"))
+  (wire (pts (xy 204.92 117.54) (xy 43.81 117.54)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "de2e67a4-9f5b-4fb1-ac6d-f84161457855"))
+  (wire (pts (xy 43.81 117.54) (xy 43.81 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "f0214915-2e0c-4f2f-8269-d90887c4c259"))
+  (wire (pts (xy 43.81 45.00) (xy 128.81 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "bb267162-d54f-41ff-8fcd-fbf214194c2a"))
+  (label "GND" (at 124.36 117.54 0) (effects (font (size 1.27 1.27))) (uuid "223759b0-3d7f-441c-998d-399841f00c9e"))
+  (wire (pts (xy 130.08 115.00) (xy 210.00 115.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "b3adf3ec-36c3-4e43-b85a-8ae79fac8e00"))
+  (wire (pts (xy 210.00 115.00) (xy 210.00 41.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "88e86ed9-baa0-498b-9c78-1eaf593016d7"))
+  (wire (pts (xy 210.00 41.19) (xy 40.00 41.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "328a395c-2245-4d85-b092-034819ce1eb2"))
+  (wire (pts (xy 40.00 41.19) (xy 40.00 111.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "fcc983a0-2685-4116-9295-8f66f9df2149"))
+  (label "SW_OUT" (at 170.04 115.00 0) (effects (font (size 1.27 1.27))) (uuid "ef00221e-a2c4-4bdf-809c-20c097c65b7c"))
+  (wire (pts (xy 210.00 48.81) (xy 36.19 48.81)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "9e08a842-31e6-4dc6-aef1-c9f128899257"))
+  (wire (pts (xy 36.19 48.81) (xy 36.19 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "f6cd73c4-b83c-43f8-a8f6-c51ecccf4fd3"))
+  (label "LED1_NET" (at 123.09 48.81 0) (effects (font (size 1.27 1.27))) (uuid "ab0adcad-102f-4732-b13e-83ab358c402d"))
+  (wire (pts (xy 40.00 118.81) (xy 121.19 118.81)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "6692cb53-d21a-4981-b8a5-0c6e1d03927f"))
+  (wire (pts (xy 121.19 118.81) (xy 121.19 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "e19c7649-5b99-46e5-9869-8629d4b44e66"))
+  (label "LED2_NET" (at 80.59 118.81 0) (effects (font (size 1.27 1.27))) (uuid "c1b0c248-db9f-4410-afd9-92b76f3204cf"))
+)

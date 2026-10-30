@@ -34,3 +34,12 @@ parts/
 Thumbs.db
 .idea/
 .vscode/
+
+# ===== 生成产物：只保留一份示例(json/net/kicad_sch)，预览图与旧版本不入库 =====
+outputs/preview/
+outputs/v1_ledblink/
+outputs/*.svg
+
+# ===== 个人/外部参考材料，不入公开仓库 =====
+参考资料-华天实训对照.md
+AI Agent 电路板设计 · 与我协作手册.md

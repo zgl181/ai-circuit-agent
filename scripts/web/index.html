@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 电路板设计 Agent</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --card:#ffffff; --line:#e3e8ef; --text:#1f2933; --muted:#6b7785;
+    --brand:#2563eb; --brand-soft:#eaf1ff; --ok:#15a34a; --err:#dc2626; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+       background:var(--bg);color:var(--text);line-height:1.5}
+  header{background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;padding:14px 24px;display:flex;
+         align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  header h1{margin:0;font-size:19px}
+  header p{margin:2px 0 0;opacity:.85;font-size:12px}
+  .auth{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .auth input{padding:6px 9px;border:1px solid #c7dbff;border-radius:6px;font-size:13px;outline:none}
+  .auth button{background:#fff;color:var(--brand);border:0;border-radius:6px;padding:6px 12px;
+               font-size:13px;font-weight:600;cursor:pointer}
+  .auth .user{background:rgba(255,255,255,.18);padding:6px 10px;border-radius:6px;font-size:13px}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+        padding:16px 18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  label{font-weight:600;font-size:14px;display:block;margin-bottom:8px}
+  textarea{width:100%;min-height:64px;resize:vertical;padding:10px 12px;border:1px solid var(--line);
+           border-radius:8px;font-size:14px;font-family:inherit;outline:none}
+  textarea:focus{border-color:var(--brand)}
+  .row{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  button.gen{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:10px 18px;
+         font-size:14px;font-weight:600;cursor:pointer}
+  button.gen:disabled{opacity:.55;cursor:not-allowed}
+  button.mini{background:var(--brand-soft);color:var(--brand);border:1px solid #c7dbff;border-radius:6px;
+              padding:4px 10px;font-size:12px;cursor:pointer}
+  .hint{color:var(--muted);font-size:12px}
+  .examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .chip{background:var(--brand-soft);color:var(--brand);border:1px solid #c7dbff;border-radius:999px;
+        padding:4px 12px;font-size:12px;cursor:pointer}
+  .status{font-size:13px;margin-top:6px;min-height:18px}
+  .status.ok{color:var(--ok)} .status.err{color:var(--err)} .status.run{color:var(--brand)}
+  h2{font-size:16px;margin:0 0 10px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  th{background:#f0f4fa}
+  .net{font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .net b{color:var(--brand)}
+  .downloads a{color:var(--brand);text-decoration:none;margin-right:14px;font-size:13px}
+  .downloads a:hover{text-decoration:underline}
+  #svgbox{width:100%;overflow:auto;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:8px}
+  #svgbox svg{max-width:100%;height:auto}
+  .empty{color:var(--muted);font-size:13px}
+  .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);border-radius:6px;
+         padding:2px 8px;font-size:12px;margin-left:8px}
+  .banner{background:#fff7e6;border:1px solid #f5c26b;color:#8a5a00;border-radius:10px;
+          padding:12px 14px;margin-bottom:16px;font-size:14px;line-height:1.6}
+  .banner b{color:#b45309}
+  .hist{display:flex;justify-content:space-between;gap:8px;padding:8px;border-bottom:1px solid var(--line);font-size:13px}
+  .hist:hover{background:#f6f9ff}
+  .kv{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+  .kv input{padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+  .kv .k{flex:0 0 140px} .kv .v{flex:1}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>AI 电路板设计 Agent</h1>
+    <p>自然语言 -> BOM + 网表 + KiCad 8 原理图（MongoDB 后端：历史 / 多用户 / 多Agent 共享 / LLM 缓存）</p>
+  </div>
+  <div class="auth" id="auth">
+    <input id="au" placeholder="用户名" size="10" />
+    <input id="ap" type="password" placeholder="密码" size="10" />
+    <button onclick="register()">注册</button>
+    <button onclick="login()">登录</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card" id="userbar" style="display:none">
+    <span class="user" id="userlabel"></span>
+    <button class="mini" onclick="logout()">退出登录</button>
+    <span class="hint" id="dbmode"></span>
+  </div>
+
+  <div class="card">
+    <label for="prompt">电路需求（自然语言）</label>
+    <textarea id="prompt" placeholder="例：设计一个 LED 闪烁电路，包含 1 个 LED、1 个限流电阻、1 个轻触按钮、1 个 2 节电池座"></textarea>
+    <div class="examples" id="examples">
+      <span class="chip">LED 闪烁电路</span>
+      <span class="chip">双 LED 流水灯</span>
+      <span class="chip">ATmega328P 最小系统</span>
+      <span class="chip">电池供电开关灯</span>
+    </div>
+    <div class="row">
+      <button class="gen" id="go">生成原理图</button>
+      <span class="hint">提示：Ctrl/⌘ + Enter 也可生成。已登录则设计存入你的历史。</span>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="result" style="display:none">
+    <h2>生成结果 <span class="badge" id="summary"></span></h2>
+    <div class="downloads" id="downloads"></div>
+    <h2 style="margin-top:16px">原理图预览</h2>
+    <div id="svgbox"><div class="empty">（无预览）</div></div>
+    <h2 style="margin-top:16px">元件清单 (BOM)</h2>
+    <div id="bom"></div>
+    <h2 style="margin-top:16px">网络连接 (网表)</h2>
+    <div id="nets"></div>
+  </div>
+
+  <div class="card">
+    <h2>我的设计历史</h2>
+    <div id="history"><div class="empty">登录后可查看历史记录</div></div>
+  </div>
+
+  <div class="card">
+    <h2>多 Agent 共享状态（键值）</h2>
+    <div id="agentstate"><div class="empty">（暂无共享状态）</div></div>
+    <div class="kv" style="margin-top:10px">
+      <input class="k" id="ask" placeholder="key，如 last_board" />
+      <input class="v" id="asv" placeholder="value" />
+      <button class="mini" onclick="setAgentState()">写入</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const go = $("go");
+let TOKEN = localStorage.getItem("token") || "";
+
+function setStatus(msg, cls){ const s=$("status"); s.textContent=msg; s.className="status "+(cls||""); }
+function api(path, opts){
+  opts = opts || {};
+  opts.headers = opts.headers || {};
+  if (TOKEN) opts.headers["Authorization"] = "Bearer " + TOKEN;
+  if (opts.body && !opts.headers["Content-Type"]) opts.headers["Content-Type"]="application/json";
+  return fetch(path, opts);
+}
+
+// ---------- 鉴权 ----------
+function refreshAuthUI(){
+  const bar = $("userbar");
+  if (TOKEN){
+    bar.style.display="block";
+    $("auth").style.display="none";
+    $("userlabel").textContent = "已登录: " + (localStorage.getItem("username")||"");
+  } else {
+    bar.style.display="none";
+    $("auth").style.display="flex";
+  }
+}
+async function register(){
+  const u=$("au").value.trim(), p=$("ap").value;
+  if(!u||!p){ setStatus("请输入用户名和密码","err"); return; }
+  const r=await api("/api/register",{method:"POST",body:JSON.stringify({username:u,password:p})});
+  const d=await r.json();
+  if(d.ok){ setStatus("注册成功，请登录","ok"); } else setStatus("注册失败："+d.error,"err");
+}
+async function login(){
+  const u=$("au").value.trim(), p=$("ap").value;
+  const r=await api("/api/login",{method:"POST",body:JSON.stringify({username:u,password:p})});
+  const d=await r.json();
+  if(d.ok){ TOKEN=d.token; localStorage.setItem("token",TOKEN); localStorage.setItem("username",d.username); refreshAuthUI(); loadHistory(); setStatus("登录成功","ok"); }
+  else setStatus("登录失败："+d.error,"err");
+}
+function logout(){ TOKEN=""; localStorage.removeItem("token"); localStorage.removeItem("username"); refreshAuthUI(); $("history").innerHTML='<div class="empty">登录后可查看历史记录</div>'; }
+
+// ---------- 生成 ----------
+$("examples").addEventListener("click", e=>{
+  if(e.target.classList.contains("chip")){
+    const map={
+      "LED 闪烁电路":"设计一个 LED 闪烁电路，包含 1 个 LED、1 个限流电阻、1 个轻触按钮、1 个 2 节电池座",
+      "双 LED 流水灯":"设计双 LED 闪烁电路：2 个 LED、2 个限流电阻、1 个轻触开关、1 个 2 节电池座",
+      "ATmega328P 最小系统":"设计一个 ATmega328P 单片机最小系统：晶振、复位按钮、电源指示灯 LED、限流电阻、电池座",
+      "电池供电开关灯":"设计一个电池供电的照明电路：1 个 LED、1 个限流电阻、1 个拨动开关、1 个电池座"
+    };
+    $("prompt").value=map[e.target.textContent]||""; $("prompt").focus();
+  }
+});
+async function generate(){
+  const prompt=$("prompt").value.trim();
+  if(!prompt){ setStatus("请输入电路需求","err"); return; }
+  go.disabled=true; setStatus("正在调用大模型生成电路中…","run");
+  try{
+    const resp=await api("/api/design",{method:"POST",body:JSON.stringify({prompt})});
+    const data=await resp.json();
+    if(!data.ok){ setStatus("生成失败："+(data.error||"未知错误"),"err"); return; }
+    render(data);
+    let msg="生成成功 ✓ "+ (data.summary||"");
+    if(data.from_cache) msg+=" （命中 LLM 缓存，未重复调用模型）";
+    if(data.design_id) msg+=" ｜已存入历史 #"+data.design_id.slice(-6);
+    setStatus(msg,"ok");
+    if(TOKEN) loadHistory();
+  }catch(err){
+    if(err instanceof TypeError){
+      setStatus("请求失败：未连接后端。请先双击「启动界面.bat」，再访问 http://localhost:8765。","err");
+    } else setStatus("请求出错："+err,"err");
+  }finally{ go.disabled=false; }
+}
+function render(d){
+  $("result").style.display="block";
+  $("summary").textContent=d.summary||"";
+  const f=d.files||{};
+  $("downloads").innerHTML=["json","net","sch","svg"].map(k=>`<a href="/files/${f[k]}" download>下载 ${f[k]}</a>`).join("");
+  $("svgbox").innerHTML=(d.svg_ok&&d.svg)?d.svg:'<div class="empty">原理图已生成，但预览不可用（仍可用 KiCad 打开 .kicad_sch）</div>';
+  const comps=d.components||[];
+  let html='<table><thead><tr><th>位号</th><th>类型</th><th>参数</th><th>封装</th><th>数量</th><th>备注</th></tr></thead><tbody>';
+  for(const c of comps) html+=`<tr><td>${esc(c.ref)}</td><td>${esc(c.type)}</td><td>${esc(c.value)}</td><td>${esc(c.package)}</td><td>${esc(c.quantity)}</td><td>${esc(c.note||"")}</td></tr>`;
+  html+="</tbody></table>"; $("bom").innerHTML=html;
+  const nets=d.nets||[];
+  $("nets").innerHTML=nets.map(n=>`<div class="net"><b>${esc(n.name)}</b>： `+(n.nodes||[]).map(p=>`${esc(p.ref)}.引脚${esc(p.pin)}`).join("  —  ")+"</div>").join("")||'<div class="empty">（无网络）</div>';
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+
+// ---------- 历史 ----------
+async function loadHistory(){
+  if(!TOKEN){ return; }
+  try{
+    const r=await api("/api/designs"); const d=await r.json();
+    if(!d.ok) return;
+    const box=$("history");
+    if(!d.items.length){ box.innerHTML='<div class="empty">还没有生成记录，先做一次设计吧</div>'; return; }
+    box.innerHTML=d.items.map(it=>`<div class="hist"><div><b>${esc(it.board)}</b><br><span class="hint">${esc(it.prompt)}</span><br><span class="hint">${it.summary} ｜ ${it.created_at}</span></div><button class="mini" onclick="loadOne('${it.id}')">载入</button></div>`).join("");
+  }catch(e){}
+}
+async function loadOne(id){
+  try{
+    const r=await api("/api/designs/"+id); const d=await r.json();
+    if(!d.ok){ setStatus("载入失败："+d.error,"err"); return; }
+    render(d); setStatus("已载入历史设计 #"+id.slice(-6),"ok");
+  }catch(e){ setStatus("载入出错："+e,"err"); }
+}
+
+// ---------- 多 Agent 共享状态 ----------
+async function loadAgentState(){
+  try{
+    const r=await api("/api/agent/state"); const d=await r.json();
+    const box=$("agentstate");
+    if(!d.state.length){ box.innerHTML='<div class="empty">（暂无共享状态）</div>'; return; }
+    box.innerHTML=d.state.map(s=>`<div class="hist"><div><b>${esc(s.key)}</b> = ${esc(JSON.stringify(s.value))}</div></div>`).join("");
+  }catch(e){}
+}
+async function setAgentState(){
+  const k=$("ask").value.trim(), v=$("asv").value;
+  if(!k){ setStatus("请输入 key","err"); return; }
+  await api("/api/agent/state",{method:"POST",body:JSON.stringify({key:k,value:v})});
+  $("asv").value=""; loadAgentState(); setStatus("共享状态已写入："+k,"ok");
+}
+
+// ---------- 启动 ----------
+go.addEventListener("click",generate);
+$("prompt").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter") generate(); });
+(async()=>{
+  const port=location.port;
+  if(!(location.protocol.indexOf("http")===0 && port==="8765")){
+    const b=document.createElement("div"); b.className="banner";
+    b.innerHTML="⚠️ 当前是<b>静态预览</b>，没有后端服务。请双击项目根目录的 <b>启动界面.bat</b>，访问 <b>http://localhost:8765</b>。";
+    document.querySelector(".wrap").prepend(b); go.disabled=true;
+  } else {
+    refreshAuthUI(); loadHistory(); loadAgentState();
+    try{ const r=await api("/api/agent/state"); const d=await r.json(); $("dbmode").textContent="（后端已连接）"; }catch(e){}
+  }
+})();
+</script>
+</body>
+</html>
