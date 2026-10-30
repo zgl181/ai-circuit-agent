@@ -1,5 +1,5 @@
 (kicad_sch (version 20231120) (generator "eeschema") (generator_version "8.0")
-  (uuid 22703796-416f-4c95-9f8f-f1dc697b6d5f)
+  (uuid 5c5925a7-f228-4d9d-999e-520fbd27c89e)
 
   (paper "A4")
 
@@ -594,19 +594,19 @@
     (in_bom yes)
     (on_board yes)
     (dnp no)
-    (uuid "e3749c4d-a62a-414d-8873-ccbd67086ed4")
+    (uuid "778c7485-802c-498a-81d6-c77121d9f781")
     (property "Reference" "LED1" (id 0) (at 45.0 30.0 0) (effects (font (size 1.27 1.27))))
     (property "Value" "红色" (id 1) (at 45.0 60.0 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "0805" (id 2) (at 40.0 45.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1"
-        (uuid "16a41b1b-e9e8-45dd-9a1d-19ddc713d33b")
+        (uuid "d904ce84-0061-4103-a036-d1e04253e643")
     )
     (pin "2"
-        (uuid "ab054373-1611-4dca-a891-5f1927c59ceb")
+        (uuid "ade4ad84-0459-4d5b-9265-55c149fb2e3f")
     )
     (instances
       (project "双LED闪烁电路"
-        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+        (path "/5c5925a7-f228-4d9d-999e-520fbd27c89e"
           (reference "LED1")
           (unit 1)
         )
@@ -621,19 +621,19 @@
     (in_bom yes)
     (on_board yes)
     (dnp no)
-    (uuid "9d87b63c-7e2a-4ef0-a8e0-4a71f3a1b68d")
+    (uuid "8f671abb-fddd-4b11-8e09-3840ff4947eb")
     (property "Reference" "LED2" (id 0) (at 130.0 30.0 0) (effects (font (size 1.27 1.27))))
     (property "Value" "红色" (id 1) (at 130.0 60.0 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "0805" (id 2) (at 125.0 45.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1"
-        (uuid "a94d3c09-f7a2-4818-930d-85489577814e")
+        (uuid "34afd274-c3ea-406e-b31d-b03966e0f851")
     )
     (pin "2"
-        (uuid "45ced8c2-5740-4d43-bf73-58387808ce02")
+        (uuid "23531d6e-aba8-4965-bd1a-c45990097247")
     )
     (instances
       (project "双LED闪烁电路"
-        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+        (path "/5c5925a7-f228-4d9d-999e-520fbd27c89e"
           (reference "LED2")
           (unit 1)
         )
@@ -648,19 +648,19 @@
     (in_bom yes)
     (on_board yes)
     (dnp no)
-    (uuid "dd1ba89d-949b-494c-9f37-cbcbeedbe78f")
+    (uuid "d8c30d91-08b1-486d-b8a0-58607301ea7d")
     (property "Reference" "R1" (id 0) (at 215.0 30.0 0) (effects (font (size 1.27 1.27))))
     (property "Value" "220Ω" (id 1) (at 215.0 60.0 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "0805" (id 2) (at 210.0 45.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1"
-        (uuid "180ed242-0b6a-4d8c-869e-c48c28c6fe8b")
+        (uuid "7f360b7f-352f-4fa0-9d58-b09bf0a0649a")
     )
     (pin "2"
-        (uuid "47c6fe07-33cf-4cca-9488-27d311042090")
+        (uuid "7e1c9eef-bcd6-41ca-89e6-970678791f16")
     )
     (instances
       (project "双LED闪烁电路"
-        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+        (path "/5c5925a7-f228-4d9d-999e-520fbd27c89e"
           (reference "R1")
           (unit 1)
         )
@@ -675,19 +675,19 @@
     (in_bom yes)
     (on_board yes)
     (dnp no)
-    (uuid "e3f508ca-c487-4ead-8117-b8e414139aaa")
+    (uuid "81a7d551-bcf6-4774-bbfe-54767df0135d")
     (property "Reference" "R2" (id 0) (at 45.0 100.0 0) (effects (font (size 1.27 1.27))))
     (property "Value" "220Ω" (id 1) (at 45.0 130.0 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "0805" (id 2) (at 40.0 115.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1"
-        (uuid "99b04117-14e6-4735-b7c0-e7489d8ba324")
+        (uuid "5a5eca1b-432a-4f6a-a061-efde483d6872")
     )
     (pin "2"
-        (uuid "10d45426-5475-4dc2-b032-8a8cc9456566")
+        (uuid "401fc08c-79b2-4cd7-9ba0-6f6609cd70c1")
     )
     (instances
       (project "双LED闪烁电路"
-        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+        (path "/5c5925a7-f228-4d9d-999e-520fbd27c89e"
           (reference "R2")
           (unit 1)
         )
@@ -702,19 +702,19 @@
     (in_bom yes)
     (on_board yes)
     (dnp no)
-    (uuid "6cb4a6ef-4d19-4bb2-9cec-7bd9d25b216d")
+    (uuid "a92dd3ce-c2b3-4ca4-9b58-db0a219ab510")
     (property "Reference" "SW1" (id 0) (at 130.0 100.0 0) (effects (font (size 1.27 1.27))))
     (property "Value" "轻触开关" (id 1) (at 130.0 130.0 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "6x6mm" (id 2) (at 125.0 115.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1"
-        (uuid "539b6cf6-e386-4b60-b482-a8cf276b5f2e")
+        (uuid "13f6e147-e976-4f32-96d6-4175324e8969")
     )
     (pin "2"
-        (uuid "42996230-0ab9-417f-a1dd-d9877ff950a1")
+        (uuid "273c617e-a89b-4fba-bae0-383659abce75")
     )
     (instances
       (project "双LED闪烁电路"
-        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+        (path "/5c5925a7-f228-4d9d-999e-520fbd27c89e"
           (reference "SW1")
           (unit 1)
         )
@@ -729,19 +729,19 @@
     (in_bom yes)
     (on_board yes)
     (dnp no)
-    (uuid "b0ecb704-1c87-4259-82e9-89c4af8e98b1")
+    (uuid "c39c949c-20ae-4b0c-9004-9c3a72aa2efc")
     (property "Reference" "BAT1" (id 0) (at 215.0 100.0 0) (effects (font (size 1.27 1.27))))
     (property "Value" "2节电池座" (id 1) (at 215.0 130.0 0) (effects (font (size 1.27 1.27))))
     (property "Footprint" "2xAA" (id 2) (at 210.0 115.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1"
-        (uuid "6975c9da-b6ce-4ed9-8b7e-3c2c1958b2cd")
+        (uuid "a43b227a-581e-48d4-af85-dd374c2e2781")
     )
     (pin "2"
-        (uuid "c2a9728d-a8e2-411e-a2eb-26418bd3df8c")
+        (uuid "653cf839-b944-4351-8c85-cbc21f2cb45f")
     )
     (instances
       (project "双LED闪烁电路"
-        (path "/22703796-416f-4c95-9f8f-f1dc697b6d5f"
+        (path "/5c5925a7-f228-4d9d-999e-520fbd27c89e"
           (reference "BAT1")
           (unit 1)
         )
@@ -749,21 +749,21 @@
     )
   )
 
-  (wire (pts (xy 204.92 115.00) (xy 119.92 115.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "1eda96a6-18c7-4917-8448-93eaa6e56c8c"))
-  (label "VCC" (at 162.42 115.00 0) (effects (font (size 1.27 1.27))) (uuid "82469002-46d6-4105-8963-c297fe1e9da8"))
-  (wire (pts (xy 204.92 117.54) (xy 43.81 117.54)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "de2e67a4-9f5b-4fb1-ac6d-f84161457855"))
-  (wire (pts (xy 43.81 117.54) (xy 43.81 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "f0214915-2e0c-4f2f-8269-d90887c4c259"))
-  (wire (pts (xy 43.81 45.00) (xy 128.81 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "bb267162-d54f-41ff-8fcd-fbf214194c2a"))
-  (label "GND" (at 124.36 117.54 0) (effects (font (size 1.27 1.27))) (uuid "223759b0-3d7f-441c-998d-399841f00c9e"))
-  (wire (pts (xy 130.08 115.00) (xy 210.00 115.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "b3adf3ec-36c3-4e43-b85a-8ae79fac8e00"))
-  (wire (pts (xy 210.00 115.00) (xy 210.00 41.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "88e86ed9-baa0-498b-9c78-1eaf593016d7"))
-  (wire (pts (xy 210.00 41.19) (xy 40.00 41.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "328a395c-2245-4d85-b092-034819ce1eb2"))
-  (wire (pts (xy 40.00 41.19) (xy 40.00 111.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "fcc983a0-2685-4116-9295-8f66f9df2149"))
-  (label "SW_OUT" (at 170.04 115.00 0) (effects (font (size 1.27 1.27))) (uuid "ef00221e-a2c4-4bdf-809c-20c097c65b7c"))
-  (wire (pts (xy 210.00 48.81) (xy 36.19 48.81)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "9e08a842-31e6-4dc6-aef1-c9f128899257"))
-  (wire (pts (xy 36.19 48.81) (xy 36.19 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "f6cd73c4-b83c-43f8-a8f6-c51ecccf4fd3"))
-  (label "LED1_NET" (at 123.09 48.81 0) (effects (font (size 1.27 1.27))) (uuid "ab0adcad-102f-4732-b13e-83ab358c402d"))
-  (wire (pts (xy 40.00 118.81) (xy 121.19 118.81)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "6692cb53-d21a-4981-b8a5-0c6e1d03927f"))
-  (wire (pts (xy 121.19 118.81) (xy 121.19 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "e19c7649-5b99-46e5-9869-8629d4b44e66"))
-  (label "LED2_NET" (at 80.59 118.81 0) (effects (font (size 1.27 1.27))) (uuid "c1b0c248-db9f-4410-afd9-92b76f3204cf"))
+  (wire (pts (xy 204.92 115.00) (xy 119.92 115.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "a1b799bd-36df-4e55-b735-e5ca168855dd"))
+  (label "VCC" (at 162.42 115.00 0) (effects (font (size 1.27 1.27))) (uuid "b0e21250-341d-4eda-a6a4-dbf68a86ba2f"))
+  (wire (pts (xy 204.92 117.54) (xy 43.81 117.54)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "3fcdc274-2821-40fa-95b7-0bb224e1f80a"))
+  (wire (pts (xy 43.81 117.54) (xy 43.81 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "af18604b-f22c-4402-9617-16c907c1d831"))
+  (wire (pts (xy 43.81 45.00) (xy 128.81 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "a8593635-1938-4e93-a4a3-ef40956296d7"))
+  (label "GND" (at 124.36 117.54 0) (effects (font (size 1.27 1.27))) (uuid "d1db1feb-a307-45a9-ae40-106bc9c9486a"))
+  (wire (pts (xy 130.08 115.00) (xy 210.00 115.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "fd1eb84a-86f0-4e68-a29e-0afd53a1241e"))
+  (wire (pts (xy 210.00 115.00) (xy 210.00 41.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "a67e158d-c95b-429a-997c-44f838722030"))
+  (wire (pts (xy 210.00 41.19) (xy 40.00 41.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "3566eb78-4176-4a96-a8ec-722845d06c66"))
+  (wire (pts (xy 40.00 41.19) (xy 40.00 111.19)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "33a7a1c3-6b51-4670-a2a8-49ab9b2fcc2d"))
+  (label "SW_OUT" (at 170.04 115.00 0) (effects (font (size 1.27 1.27))) (uuid "4a8cc47e-39fd-4e64-875c-4e9ba7e41416"))
+  (wire (pts (xy 210.00 48.81) (xy 36.19 48.81)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "9dc6e561-eb9f-4350-8853-c09fdcf4a195"))
+  (wire (pts (xy 36.19 48.81) (xy 36.19 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "16c119c0-4967-4ec8-848d-11e6af051c5c"))
+  (label "LED1_NET" (at 123.09 48.81 0) (effects (font (size 1.27 1.27))) (uuid "073a95cb-b64d-4dfe-8a0c-9709b662b7a3"))
+  (wire (pts (xy 40.00 118.81) (xy 121.19 118.81)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "3a3e6f06-3e70-4c40-bfcf-c41a147f3c20"))
+  (wire (pts (xy 121.19 118.81) (xy 121.19 45.00)) (stroke (width 0) (type default) (color 0 0 0 0)) (uuid "1088b492-e2b0-4321-90cb-6d227d07e9dd"))
+  (label "LED2_NET" (at 80.59 118.81 0) (effects (font (size 1.27 1.27))) (uuid "2a599042-1a43-4362-b465-b27e64b26632"))
 )

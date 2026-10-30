@@ -23,7 +23,7 @@
       "value": "220Ω",
       "package": "0805",
       "quantity": 1,
-      "note": "LED1限流"
+      "note": "限流电阻"
     },
     {
       "ref": "R2",
@@ -31,7 +31,7 @@
       "value": "220Ω",
       "package": "0805",
       "quantity": 1,
-      "note": "LED2限流"
+      "note": "限流电阻"
     },
     {
       "ref": "SW1",
