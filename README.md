@@ -147,6 +147,22 @@ python scripts/kicad_sch.py outputs/design.json outputs/design.kicad_sch
 - **不装 mongod**：`db.py` 连不上本地 `mongodb://localhost:27017` 时自动使用 `mongomock`（内存），功能齐全但重启即清空。
 - **装了 mongod**：启动服务时自动切到 `real` 模式，数据持久化。
 
+### 本机已部署（便携版，无需管理员权限）
+
+MongoDB 8.0 便携版已下载解压到本机，普通用户即可运行：
+
+- 程序：`C:\Users\24013\Desktop\工具\mongodb\mongodb-win32-x86_64-windows-8.0.0\bin\mongod.exe`
+- 数据目录：`C:\Users\24013\Desktop\工具\mongodb-data`（重启后数据仍在）
+- 默认监听 `127.0.0.1:27017`，仅本机访问
+
+启动方式（二选一）：
+
+- **双击 `启动界面.bat`（推荐）**：先拉起 MongoDB，等几秒再开网页界面，一条龙。
+- **双击 `start-mongo.bat`**：只启动 MongoDB（不启网页），便于单独调试。
+
+> 装好并运行后，`scripts/db.py` 会自动从 `mongomock`（内存）切到 `real`（真 MongoDB），无需改任何代码。判断当前模式：启动后访问网页、注册/生成任意一次，或在 `scripts/` 下执行
+> `.venv\Scripts\python.exe -c "import db; print(db.mode())"` 会打印 `real`。
+
 集合设计（数据库 `circuit_agent`）：
 
 | 集合 | 用途 |
