@@ -13,6 +13,7 @@ import json
 import os
 
 from llm_client import chat
+from pinouts import correct_design_pins
 
 SYSTEM_PROMPT = """你是一个电路板设计助手。用户用自然语言描述一块电路板的需求，
 你必须输出该电路的"设计"JSON，不要任何解释、不要 Markdown 代码块。
@@ -54,7 +55,10 @@ def parse_json(text: str):
 def design(prompt: str) -> dict:
     """给定一句需求，返回 {board, components, nets} 字典。"""
     raw = chat(SYSTEM_PROMPT, prompt, temperature=0.2)
-    return parse_json(raw)
+    data = parse_json(raw)
+    # 按真实数据手册纠正已知芯片的错误引脚号（如 DIP 脚号误用于 QFN 符号）
+    correct_design_pins(data)
+    return data
 
 
 def main():

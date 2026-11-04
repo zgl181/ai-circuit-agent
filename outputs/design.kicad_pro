@@ -1,0 +1,18 @@
+(kicad_project (version 1)
+  (general
+    (thickness 1.6)
+    (drawings 0)
+    (tracks 0)
+    (zones 0)
+    (modules 0)
+    (nets 0)
+  )
+  (paper "A4")
+  (pcbnew
+    (page_layout_descr_file "")
+  )
+  (schematic
+    (net_format 1)
+    (legacy_lib_dir "")
+  )
+)

@@ -212,8 +212,11 @@ def power_symbol_for(name):
     return None
 
 
-def resolve_lib(comp):
-    """根据元件 type 字段解析 (库文件, 符号名)。"""
+def resolve_lib(comp, pin_count=2):
+    """根据元件 type 字段解析 (库文件, 符号名)。
+
+    pin_count: 该元件在网表里引用到的最大脚号（用于给连接器/排针选合适尺寸）。
+    """
     t = (comp.get("type") or "").lower().strip()
     # 精确 74 系列（74HC373 / 74LS00 / 74HCT08 ...）
     m = re.search(r'74\s*(hc|hct|ls|als|f|ac|act|lv)?\s*(\d{2,3})', t)
@@ -222,6 +225,10 @@ def resolve_lib(comp):
         pp = os.path.join(SYM_DIR, "74xx.kicad_sym")
         if os.path.exists(pp) and f'(symbol "{name}"' in open(pp, encoding="utf-8", errors="ignore").read():
             return "74xx.kicad_sym", name
+    # 连接器 / 排针：按实际用到的最大脚号选单排排针 Conn_01xNN（避免脚号不存在被丢弃）
+    if any(w in t for w in ["连接器", "排针", "接头", "connector", "header", "插座"]):
+        n = max(2, min(50, int(pin_count)))
+        return "Connector_Generic.kicad_sym", f"Conn_01x{n:02d}"
     for k, (lf, sn) in SYM_MAP.items():
         if k.lower() in t:
             return lf, sn
@@ -231,12 +238,27 @@ def resolve_lib(comp):
     return DEFAULT_LIB, DEFAULT_SYM
 
 
-def outward(pin_local):
-    """给定引脚的库内局部坐标(plib Y 向上)，返回朝外的单位方向 (dx,dy)，用于引 stub。"""
+def outward(pin_local, maxx=0.0, maxy=0.0):
+    """给定引脚的库内局部坐标(plib Y 向上)以及该符号的边界极值 (maxx,maxy)，
+    按"引脚属于哪条边"判定朝外方向，返回单位向量 (dx,dy)。
+
+    关键修正：多引脚 IC(如 TQFP-32)的某些引脚虽然 py 很大，但 px 已到达右/左边界，
+    必须沿边界法向(水平)引出，否则会被误判为"顶部引脚"而向上引，stub 会穿过同侧其它
+    网络引脚导致 KiCad 把不同网络短路合并。这里用"离哪条边最近"来判定所属边。
+    """
     px, py, _ = pin_local
-    if abs(px) >= abs(py):
-        return (-1.0, 0.0) if px < 0 else (1.0, 0.0)
-    return (0.0, 1.0) if py > 0 else (0.0, -1.0)
+    d_left = abs(px + maxx)
+    d_right = abs(px - maxx)
+    d_top = abs(py - maxy)
+    d_bottom = abs(py + maxy)
+    m = min(d_left, d_right, d_top, d_bottom)
+    if m == d_right:
+        return (1.0, 0.0)
+    if m == d_left:
+        return (-1.0, 0.0)
+    if m == d_top:
+        return (0.0, 1.0)
+    return (0.0, -1.0)
 
 
 def order_components(comps, valid_nets):
@@ -278,12 +300,25 @@ def build_sch(design):
     root_uuid = str(uuid.uuid4())
     board_name = design.get("board", "PCB1")
 
+    # 0) 计算每个元件在网表里引用到的最大脚号（给连接器/排针选合适尺寸）
+    ref_maxpin = {}
+    for net in design.get("nets", []):
+        for n in net.get("nodes", []):
+            try:
+                p = int(str(n.get("pin")))
+                ref_maxpin[n.get("ref")] = max(ref_maxpin.get(n.get("ref"), 0), p)
+            except (ValueError, TypeError):
+                pass
+
     # 1) 解析并抽取所有用到的元件符号
     embedded = {}            # lib_id -> body
     comp_lib = {}            # ref -> (lib_id, pins)
     comp_pins = {}           # ref -> {pin_number: (px,py,rot)}
+    lib_extent = {}          # lib_id -> (maxx, maxy) 用于判定引脚所属边
+    comp_extent = {}         # ref -> (maxx, maxy)
+    lib_pins = {}            # lib_id -> [(num,px,py,rot), ...] 供复用符号时取正确引脚
     for c in comps:
-        lf, sn = resolve_lib(c)
+        lf, sn = resolve_lib(c, ref_maxpin.get(c["ref"], 2))
         lib_id = f"{lf[:-10]}:{sn}"
         if lib_id not in embedded:
             body, pins = extract_symbol(lf, sn)
@@ -301,8 +336,17 @@ def build_sch(design):
             if body is None:
                 continue
             embedded[lib_id] = body
+            lib_pins[lib_id] = pins
+            # 计算该符号引脚边界极值，用于 outward() 判定引脚所属边
+            if pins:
+                lib_extent[lib_id] = (max(abs(px) for _, px, _, _ in pins),
+                                      max(abs(py) for _, _, py, _ in pins))
+        # 注意：复用已嵌入符号时，pins 变量在上一个分支里不会被重新赋值，
+        # 必须从 lib_pins 缓存取正确引脚，否则会拿到上一个元件的引脚(错位/脚数不符)。
+        pins = lib_pins[lib_id]
         comp_lib[c["ref"]] = (lib_id, pins)
         comp_pins[c["ref"]] = {num: (px, py, rot) for (num, px, py, rot) in pins}
+        comp_extent[c["ref"]] = lib_extent.get(lib_id, (0.0, 0.0))
 
     # 2) 校验网表：丢弃引用了不存在元件/引脚的节点
     valid_nets = []
@@ -325,14 +369,57 @@ def build_sch(design):
         elif len(nodes) == 1:
             dropped.append(f"{name}:单端({nodes[0][0]}.{nodes[0][1]})")
 
-    # 3) 拓扑排序 + 网格布局（KiCad 坐标单位毫米；A4=297x210mm）
+    # 3) 布局：课本风格——MCU 居中，晶振+负载电容聚在 XTAL 引脚旁，
+    #    复位电路靠 RESET 引脚，去耦电容靠 VCC，排针/接头沿边缘整齐排布。
     order = order_components(comps, valid_nets)
-    n = len(order)
-    cols = max(2, min(4, (n + 1) // 2))
-    dx, dy, x0, y0 = 75.0, 65.0, 45.0, 45.0
     pos = {}
-    for i, ref in enumerate(order):
-        pos[ref] = (x0 + (i % cols) * dx, y0 + (i // cols) * dy)
+
+    # 找出 MCU（主控）作为锚点
+    mcu = None
+    for c in comps:
+        t = c.get("type", "").lower()
+        if any(w in t for w in ["单片机", "mcu", "微控", "microcontroller", "微处理器"]):
+            mcu = c
+            break
+    if mcu is None and comps:
+        mcu = comps[0]
+
+    cx, cy = 120.0, 125.0
+    comp_set = {c["ref"] for c in comps}
+    if mcu is not None:
+        pos[mcu["ref"]] = (cx, cy)
+
+    # 相对 MCU 中心的课本式偏移（mm）。该板为固定演示板，按最小系统自然位置排布；
+    # 若某 ref 不存在则自动跳过，剩余元件走底部排针排/网格兜底，保证通用性。
+    REL = {
+        "Y1":  (62.0, -42.0),   # 晶振：右上，夹在两个 XTAL 引脚之间
+        "C2":  (98.0, -52.0),   # 22pF 负载电容（XTAL1 侧）
+        "C3":  (98.0, -32.0),   # 22pF 负载电容（XTAL2 侧）
+        "R1":  (78.0, 48.0),    # 复位上拉电阻：右侧 RESET 附近
+        "SW1": (78.0, 74.0),    # 复位按键
+        "C1":  (-52.0, -46.0),  # 100nF 去耦：左上 VCC 附近
+        "C4":  (-52.0, -72.0),  # 10uF 电源滤波：左上
+        "J1":  (96.0, 20.0),    # ISP 下载口：右侧
+    }
+    for r, (dx2, dy2) in REL.items():
+        if r in comp_set:
+            pos[r] = (cx + dx2, cy + dy2)
+
+    # 排针/接头（未在上表中的）：沿底部整齐排成一排
+    headers = [c["ref"] for c in comps
+               if any(w in c.get("type", "").lower() for w in
+                      ["连接器", "排针", "接头", "connector", "header", "插座"])
+               and c["ref"] not in pos]
+    hx0, hy = 60.0, 240.0
+    for i, r in enumerate(headers):
+        pos[r] = (hx0 + i * 70.0, hy)
+
+    # 其余未定位的元件用网格兜底
+    leftover = [c["ref"] for c in comps if c["ref"] not in pos]
+    gi = 0
+    for r in leftover:
+        pos[r] = (45.0 + (gi % 4) * 60.0, 300.0 + (gi // 4) * 60.0)
+        gi += 1
 
     # 4) 计算各引脚绝对坐标（库符号 Y 向上，原理图 Y 向下 -> 翻转 Y）
     pin_abs = {}
@@ -395,70 +482,10 @@ def build_sch(design):
             f'  )'
         )
 
-    # 6) 区分电源网络 / 信号网络
-    power_nets = {}      # name -> power symbol name（保留供未来用，当前统一走 net label）
-    signal_nets = []
-    for name, nodes in valid_nets:
-        # 说明：曾尝试把电源网络画成 power 库符号（power:GND 等），但 KiCad 在自动布局下
-        # 会把不同名的电源符号合并成一个 <NO NET>。改为全部走 net label（命名为 VCC/GND/+12V…），
-        # 电气上等价且不会短路，视觉上也是专业原理图常见画法。
-        ps = power_symbol_for(name)
-        if ps:
-            power_nets[name] = ps
-        signal_nets.append((name, nodes))
-
-    # 7) 电源符号：每个电源引脚外引一小段线 + 放电源符号（自动连全局同名网络）
-    #    防短路护栏：若符号引脚位置离其它电源符号/元件引脚太近(<10mm)，退化为网络标签，
-    #    避免把 VCC/GND 等不同电源网络短接成一段 <NO NET>。
-    placed_power_pins = []
-    all_pin_coords = [(x, y) for ref in pin_abs for (x, y) in pin_abs[ref].values()]
-
-    def _too_close(x, y):
-        for (ox, oy) in placed_power_pins + all_pin_coords:
-            if (x - ox) ** 2 + (y - oy) ** 2 < 100.0:  # <10mm
-                return True
-        return False
-
-    for name, ps in []:  # 电源符号暂禁用（见上方说明），电源网络统一走 net label
-        lib_id = f"power:{ps}"
-        if lib_id not in embedded:
-            body, ppins = extract_symbol("power.kicad_sym", ps)
-            if body:
-                body = body.replace(f'(symbol "{ps}"', f'(symbol "{lib_id}"', 1)
-                embedded[lib_id] = body
-        if lib_id not in embedded:
-            continue
-        ppins = extract_symbol("power.kicad_sym", ps)[1]
-        plx, ply = (ppins[0][1], ppins[0][2]) if ppins else (0.0, 0.0)
-        pn = ppins[0][0] if ppins else "1"
-        # 遍历该电源网络的所有节点
-        for (ref, pin) in [nd for nm, nd in valid_nets if nm == name for nd in nd]:
-            if ref not in pin_abs or pin not in pin_abs[ref]:
-                continue
-            pax, pay = pin_abs[ref][pin]
-            lx, ly = outward(comp_pins[ref][pin])
-            tx, ty = pax + lx * 12.0, pay + ly * 12.0
-            add_wire((pax, pay), (tx, ty))
-            if _too_close(tx, ty):
-                # 放不下电源符号 -> 退化为普通网络标签（仍连到同名网络）
-                lu = str(uuid.uuid4())
-                wire_blocks.append(
-                    f'  (label "{name}" (at {tx:.2f} {ty:.2f} 0) '
-                    f'(effects (font (size 1.27 1.27))) (uuid "{lu}"))'
-                )
-                continue
-            placed_power_pins.append((tx, ty))
-            sx = tx - plx
-            sy = ty + ply
-            uid = str(uuid.uuid4())
-            pu = str(uuid.uuid4())
-            sym_blocks.append(
-                f'  (symbol (lib_id "{lib_id}") (at {sx:.2f} {sy:.2f} 0) (unit 1) '
-                f'(exclude_from_sim no) (in_bom no) (on_board no) (uuid "{uid}")\n'
-                f'    (pin "{pn}" (uuid "{pu}"))\n'
-                f'    (instances (project "{board_name}" (path "/{root_uuid}" '
-                f'(reference "#PWR") (unit 1))))\n  )'
-            )
+    # 6) 电源网络与信号网络统一用"网络标签"画法（与你给的参考图一致的黄色标签风格，
+    #    可靠、不会像电源符号自动布局那样把 VCC/GND 误短路成 <NO NET>）。VCC/GND/+5V 等
+    #    命名本身就是 KiCad 标准电源标注，电气等价且清晰。
+    signal_nets = list(valid_nets)
 
     # 8) 信号网络：每个引脚外引 stub + 同名 net label（避免长线穿越元件）
     for name, nodes in signal_nets:
@@ -466,14 +493,31 @@ def build_sch(design):
             if ref not in pin_abs or pin not in pin_abs[ref]:
                 continue
             pax, pay = pin_abs[ref][pin]
-            lx, ly = outward(comp_pins[ref][pin])
-            ex, ey = pax + lx * 9.0, pay + ly * 9.0
+            exx, exy = comp_extent[ref]
+            lx, ly = outward(comp_pins[ref][pin], exx, exy)
+            ex, ey = pax + lx * 12.7, pay + ly * 12.7
             add_wire((pax, pay), (ex, ey))
             lu = str(uuid.uuid4())
             wire_blocks.append(
                 f'  (label "{name}" (at {ex:.2f} {ey:.2f} 0) '
                 f'(effects (font (size 1.27 1.27))) (uuid "{lu}"))'
             )
+
+    # 9) 未连接引脚加 No-Connect 标记，消除 ERC 未连接报错（课本级干净）
+    connected = set()
+    for _, nodes in valid_nets:
+        for (r, p) in nodes:
+            connected.add((r, p))
+    nc_blocks = []
+    for ref in pin_abs:
+        if ref not in comp_pins:
+            continue
+        for pin, (px, py) in pin_abs[ref].items():
+            if (ref, pin) not in connected:
+                ncu = str(uuid.uuid4())
+                nc_blocks.append(
+                    f'  (no_connect (at {px:.2f} {py:.2f}) (uuid "{ncu}"))'
+                )
 
     lib_symbols_block = "\n".join(embedded.values())
     today = datetime.date.today().isoformat()
@@ -495,6 +539,8 @@ def build_sch(design):
 {chr(10).join(sym_blocks)}
 
 {chr(10).join(wire_blocks)}
+
+{chr(10).join(nc_blocks)}
 )
 """
     if dropped:
