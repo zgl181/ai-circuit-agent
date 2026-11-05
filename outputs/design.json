@@ -50,6 +50,22 @@
       "note": "电源滤波(VCC-GND)"
     },
     {
+      "ref": "L1",
+      "type": "磁珠",
+      "value": "FerriteBead",
+      "package": "0805",
+      "quantity": 1,
+      "note": "磁珠：隔离 VCC 与 AVCC(模拟电源)"
+    },
+    {
+      "ref": "C5",
+      "type": "电容",
+      "value": "100nF",
+      "package": "0805",
+      "quantity": 1,
+      "note": "AVCC去耦电容(AVCC-GND)"
+    },
+    {
       "ref": "R1",
       "type": "电阻",
       "value": "10k",
@@ -111,7 +127,15 @@
         {"ref": "J4", "pin": "1"},
         {"ref": "U1", "pin": "4"},
         {"ref": "U1", "pin": "6"},
-        {"ref": "U1", "pin": "18"}
+        {"ref": "L1", "pin": "1"}
+      ]
+    },
+    {
+      "name": "AVCC",
+      "nodes": [
+        {"ref": "U1", "pin": "18"},
+        {"ref": "L1", "pin": "2"},
+        {"ref": "C5", "pin": "1"}
       ]
     },
     {
@@ -129,7 +153,8 @@
         {"ref": "U1", "pin": "3"},
         {"ref": "U1", "pin": "5"},
         {"ref": "U1", "pin": "21"},
-        {"ref": "U1", "pin": "33"}
+        {"ref": "U1", "pin": "33"},
+        {"ref": "C5", "pin": "2"}
       ]
     },
     {

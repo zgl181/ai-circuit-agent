@@ -36,6 +36,7 @@ SYM_MAP = {
     "开关": ("Switch.kicad_sym", "SW_Push"), "按钮": ("Switch.kicad_sym", "SW_Push"),
     "晶振": ("Device.kicad_sym", "Crystal"), "crystal": ("Device.kicad_sym", "Crystal"),
     "oscillator": ("Device.kicad_sym", "Crystal"),
+    "磁珠": ("Device.kicad_sym", "FerriteBead"), "ferrite": ("Device.kicad_sym", "FerriteBead"),
     "电感": ("Device.kicad_sym", "L"), "inductor": ("Device.kicad_sym", "L"),
     "电位器": ("Device.kicad_sym", "R_Potentiometer"), "potentiometer": ("Device.kicad_sym", "R_Potentiometer"),
     "蜂鸣器": ("Device.kicad_sym", "R"),
@@ -400,6 +401,8 @@ def build_sch(design):
         "C1":  (-52.0, -46.0),  # 100nF 去耦：左上 VCC 附近
         "C4":  (-52.0, -72.0),  # 10uF 电源滤波：左上
         "J1":  (96.0, 20.0),    # ISP 下载口：右侧
+        "L1":  (46.0, 44.0),    # 磁珠：右侧，VCC/AVCC 之间
+        "C5":  (46.0, 80.0),    # AVCC 去耦电容：磁珠下方
     }
     for r, (dx2, dy2) in REL.items():
         if r in comp_set:

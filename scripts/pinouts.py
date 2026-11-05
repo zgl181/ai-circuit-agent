@@ -13,8 +13,9 @@ PINOUTS = {
     "ATmega328P": {
         "package": "QFN-32 / TQFP-32 (KiCad: ATmega328P-M)",
         "signals": {
-            # 电源 / 地（AVCC 在最小系统里直接并到 VCC）
-            "VCC": [4, 6, 18],
+            # 数字电源 VCC（pin 4、6）；pin 18 是 AVCC(模拟电源)，单独成网
+            "VCC": [4, 6],
+            "AVCC": [18],
             "GND": [3, 5, 21, 33],
             # 复位（PC6/RESET，注意不是 1 脚！1 脚是 PD3）
             "RESET": [29],
@@ -32,6 +33,7 @@ PINOUTS = {
 # 网络名 -> 信号别名：让 "VCC"/"+5V"/"5V" 等都归一到对应信号脚。
 ALIASES = {
     "VCC": "VCC", "+5V": "VCC", "5V": "VCC", "VDD": "VCC",
+    "AVCC": "AVCC",
     "GND": "GND", "VSS": "GND",
     "RESET": "RESET", "RST": "RESET", "MR": "RESET",
     "XTAL1": "XTAL1", "OSC1": "XTAL1", "CLKIN": "XTAL1",
