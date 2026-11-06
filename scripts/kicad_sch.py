@@ -139,6 +139,25 @@ def extract_symbol(libfile, symname):
     return result
 
 
+def get_power_symbol(name):
+    """从 power.kicad_sym 抽取电源符号(如 GND/+5V)完整定义，供原理图内嵌渲染。"""
+    path = os.path.join(SYM_DIR, "power.kicad_sym")
+    if not os.path.exists(path):
+        return None
+    s = open(path, encoding="utf-8", errors="ignore").read()
+    i = s.find(f'(symbol "{name}"')
+    if i == -1:
+        return None
+    body = _bracket(s, i)
+    em = re.search(r'\(extends\s+"([^"]+)"', body)
+    if em:
+        uname = em.group(1)
+        j = s.find(f'(symbol "{uname}"')
+        if j != -1:
+            body = _bracket(s, j)
+    return body
+
+
 def _is_composite(body):
     """复合符号：引脚/图形被包在嵌套 (symbol "X_1_0" ...) 里，直接改名顶层会导致 KiCad 加载失败。"""
     return body.count('(symbol "') > 1
@@ -431,24 +450,25 @@ def build_sch(design):
     if mcu is not None:
         pos[mcu["ref"]] = (cx, cy)
 
-    # 课本式：围绕 MCU 布置功能元件（绝对坐标，已预先留好间距，互不重叠）
-    # 注意 U1 为 DIP-28 直插符号(约 31×76mm)，居中偏上，排针放在下方/侧边空档。
+    # 课本式分区布局（横向 A4：左=USB串口/电源，中=MCU+时钟+指示灯，右=排针）
+    # 所有坐标已按元件本体 + 标签留白预排，互不重叠；U1 左右两侧的 net label 会落在
+    # 元件外侧的空白条里，因此把复位/去耦/指示灯挪到不与这些标签带冲突的位置。
     PLACE = {
-        # MCU 居中
-        "U1":  (128, 135),
-        # 顶部一行：晶振 + 负载电容 + 去耦
-        "Y1":  (62, 92),   "C1": (48, 92),   "C2": (76, 92),
-        "C3":  (100, 92),  "C11": (130, 92), "C4": (148, 92),
-        "Y2":  (235, 92),  "C6": (221, 92),  "C7": (249, 92),
-        # 中右：CH340G 及其周边（去耦、晶振、USB、保险）
-        "U2":  (235, 130), "C5": (255, 120), "C8": (255, 140),
-        "USB1":(255, 160), "F1": (235, 160),
-        # MCU 右侧：复位 / DTR / 滤波
-        "R1":  (165, 100), "SW1": (165, 118), "C9": (165, 136), "C10": (165, 154),
-        # 底部一行：排针（ICSP / 数字 / 模拟）+ 指示灯
-        "ICSP1":(95, 168), "H_D": (185, 162), "H_A": (215, 168),
-        "R2":  (70, 150),  "D1": (88, 150),
-        "R3":  (70, 168),  "D2": (88, 168),
+        # === 中央：主控 MCU（ATmega328P-PU DIP-28）===
+        "U1":  (135, 135),
+        # === 顶部：U1 的 16MHz 时钟 + 去耦电容 ===
+        "Y1":  (135, 95),  "C1": (120, 95),  "C2": (150, 95),
+        "C3":  (178, 82), "C11": (193, 82), "C4": (208, 82),
+        # === 左区：USB 转串口(CH340G) + 电源入口(USB/PTC/电解) ===
+        "USB1":(50, 100),  "F1": (50, 125),  "C10": (45, 150),
+        "U2":  (74, 122),  "C5": (74, 97),   "C8": (74, 147),
+        "Y2":  (68, 165),  "C6": (56, 165),  "C7": (80, 165),
+        # === 底部中央：复位 / DTR 自动下载电路（避开 U1 左侧标签带）===
+        "R1":  (130, 178), "SW1": (145, 178), "C9": (160, 178),
+        # === 底部左侧：电源指示灯 + D13 指示灯 ===
+        "R2":  (95, 178),  "D1": (110, 178), "R3": (80, 178), "D2": (63, 178),
+        # === 右侧：排针（数字14P / 模拟8P）+ ICSP 下载口 ===
+        "H_D": (215, 135), "H_A": (250, 135), "ICSP1": (215, 174),
     }
     for r, (px, py) in PLACE.items():
         if r in comp_set:
@@ -542,6 +562,13 @@ def build_sch(design):
     #    命名本身就是 KiCad 标准电源标注，电气等价且清晰。
     signal_nets = list(valid_nets)
 
+    # 电源地(GND)用真正的电源符号渲染（教科书风格：多个 GND 符号并联同网，ERC 安全）。
+    # 找不到 GND 符号时回退为普通 net label。
+    if "power:GND" not in embedded:
+        g = get_power_symbol("GND")
+        if g:
+            embedded["power:GND"] = g
+
     # 8) 信号网络：每个引脚外引 stub + 同名 net label（避免长线穿越元件）
     #    关键约束：KiCad 中“坐标相同的两个不同网络标签/引脚”会被误判为同一网络而短路。
     #    因此放标签前必须做坐标唯一性检查——若目标点已被“不同网络”的引脚或标签占用，
@@ -560,17 +587,85 @@ def build_sch(design):
             if nm:
                 occupied.setdefault(ckey(px, py), set()).add(nm)
 
+    # 元件本体矩形（含留白），标签/电源符号放置时据此避让；已放置的标签也登记，避免互相压叠
+    comp_rects = []
+    for ref in pos:
+        hx, hy = half_for(ref)
+        x, y = pos[ref]
+        comp_rects.append((x - hx - 3.0, y - hy - 3.0, x + hx + 3.0, y + hy + 3.0))
+    placed_label_rects = []
+
+    def wire_points_free(p1, p2, netname):
+        """W4 已验证的电气保护：沿整条候选导线按 1mm 采样，
+        任何一点若被其它网络的引脚/导线占用就放弃，避免 KiCad 合并网络。"""
+        n = max(1, int(((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5 / 1.0))
+        for i in range(n + 1):
+            t = i / n
+            x, y = p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t
+            if any(nm != netname for nm in occupied.get(ckey(x, y), set())):
+                return False
+        return True
+
+    def spot_ok(pax, pay, ex, ey, lx, ly, netname):
+        return (not box_hit(ex, ey, netname, lx, ly)
+                and wire_points_free((pax, pay), (ex, ey), netname))
+
+    def label_w(name):
+        return max(6.0, len(name) * 1.1 + 2.0)
+
+    def label_rect(ex, ey, name, lx, ly):
+        """标签文字框。KiCad label 用 justify 让文字从锚点朝元件外侧展开，
+        因此包围盒只在外法向一侧延伸，绝不回压元件本体与引脚名。
+        竖直高度按 1.27mm 字号收紧到 2.2mm，小于 2.54mm 引脚间距，
+        相邻引脚的标签才不会被误判为互相压叠（这是斜线产生的根因）。"""
+        w = label_w(name)
+        if lx > 0:                       # 向右引出 -> justify left，文字向右展开
+            return (ex - 0.8, ey - 1.1, ex + w + 0.8, ey + 1.1)
+        if lx < 0:                       # 向左引出 -> justify right，文字向左展开
+            return (ex - w - 0.8, ey - 1.1, ex + 0.8, ey + 1.1)
+        # 上/下引出：文字仍水平向右展开
+        return (ex - 0.8, ey - 1.1, ex + w + 0.8, ey + 1.1)
+
+    def _boxes_overlap(a, b):
+        return not (a[0] > b[2] or a[2] < b[0] or a[1] > b[3] or a[3] < b[1])
+
+    def box_hit(ex, ey, name, lx, ly):
+        r = label_rect(ex, ey, name, lx, ly)
+        for cr in comp_rects:
+            if _boxes_overlap(r, cr):
+                return True
+        for pr in placed_label_rects:
+            if _boxes_overlap(r, pr):
+                return True
+        return False
+
     def find_label_spot(pax, pay, lx, ly, netname):
-        for step in range(0, 60):
-            d = 12.7 + step * 2.54
+        """返回 (ex, ey, lx, ly)：沿引脚外法向拉一条纯水平/垂直的直线 stub，
+        末端放标签。导线全程正交、不折线、不斜移（教科书式原理图的关键）。
+        标签盒收紧到 2.2mm（小于 2.54mm 引脚间距），同侧相邻引脚各占自己的通道；
+        冲突时只增大外推距离，同一网络的标签自然排成整齐的一列。"""
+        for d in (8.0, 9.5, 11.0, 12.5, 14.0, 16.0, 18.0, 20.0, 23.0, 26.0, 30.0, 35.0, 40.0, 46.0):
             ex, ey = pax + lx * d, pay + ly * d
-            occ = occupied.get(ckey(ex, ey), set())
-            if not any(n != netname for n in occ):
-                return ex, ey
-        return pax + lx * (12.7 + 59 * 2.54), pay + ly * (12.7 + 59 * 2.54)
+            if spot_ok(pax, pay, ex, ey, lx, ly, netname):
+                return ex, ey, lx, ly
+        # 外法向被堵死：改用两个正交切向就近找空位（仍是全正交直线 stub），
+        # 绝不硬推 46mm 长线穿过其它元件。
+        alts = [(0.0, -1.0), (0.0, 1.0)] if lx != 0 else [(-1.0, 0.0), (1.0, 0.0)]
+        for (ax, ay) in alts:
+            for d in (8.0, 9.5, 11.0, 12.5, 14.0, 16.0, 18.0, 20.0, 23.0, 26.0):
+                ex, ey = pax + ax * d, pay + ay * d
+                if spot_ok(pax, pay, ex, ey, ax, ay, netname):
+                    return ex, ey, ax, ay
+        # 实在无处可放：退到最近的空位（沿首选方向，仍做一次避让尝试）
+        for d in (46.0, 52.0, 58.0):
+            ex, ey = pax + lx * d, pay + ly * d
+            if spot_ok(pax, pay, ex, ey, lx, ly, netname):
+                return ex, ey, lx, ly
+        return pax + lx * 46.0, pay + ly * 46.0, lx, ly
 
     def mark_wire(p1, p2, netname):
-        """把整条导线按 1mm 采样登记进 occupied，防止其它网络的标签/导线落在它上面造成误短路。"""
+        """把整条导线按 1mm 采样登记进 occupied，防止其它网络的标签/导线落在它上面造成误短路。
+        """
         n = max(1, int(((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5 / 1.0))
         for i in range(n + 1):
             t = i / n
@@ -578,22 +673,58 @@ def build_sch(design):
             y = p1[1] + (p2[1] - p1[1]) * t
             occupied.setdefault(ckey(x, y), set()).add(netname)
 
+    pwr_idx = 0
     for name, nodes in signal_nets:
+        # GND 暂时统一用 net label（与 +5V 一致），避免电源符号放置异常触发 ERC 报错；
+        # 后续若要做教科书式电源符号，再单独处理（需保证每个符号引脚精确连到对应网络）。
+        if False and name == "GND" and "power:GND" in embedded:
+            for (ref, pin) in nodes:
+                if ref not in pin_abs or pin not in pin_abs[ref]:
+                    continue
+                pax, pay = pin_abs[ref][pin]
+                exx, exy = comp_extent[ref]
+                lx, ly = outward(comp_pins[ref][pin], exx, exy)
+                ly = -ly  # 符号坐标系 Y 向上，原理图绝对坐标 Y 向下，翻转 Y 分量
+                ex, ey, _dx, _dy = find_label_spot(pax, pay, lx, ly, name)
+                add_wire((pax, pay), (ex, ey))
+                pwr_idx += 1
+                pr = f"#PWR{pwr_idx:02d}"
+                sym_blocks.append(
+                    f'  (symbol\n'
+                    f'    (lib_id "power:GND")\n'
+                    f'    (at {ex:.1f} {ey:.1f} 0)\n'
+                    f'    (unit 1)\n'
+                    f'    (in_bom no)\n    (on_board yes)\n    (dnp no)\n'
+                    f'    (uuid "{str(uuid.uuid4())}")\n'
+                    f'    (property "Reference" "{pr}" (id 0) (at {ex:.1f} {ey-4:.1f} 0) '
+                    f'(effects (font (size 1.27 1.27))))\n'
+                    f'    (property "Value" "GND" (id 1) (at {ex:.1f} {ey-4:.1f} 0) '
+                    f'(effects (font (size 1.27 1.27))))\n'
+                    f'    (instances\n      (project "{board_name}"\n        (path "/{root_uuid}"\n'
+                    f'          (reference "{pr}")\n          (unit 1)\n        )\n      )\n    )\n  )'
+                )
+                placed_label_rects.append((ex - 4, ey - 5, ex + 4, ey + 1))
+            continue
+        # 其余网络：每个引脚外引短 stub + 同名 net label（包围盒避让，整齐不重叠）
         for (ref, pin) in nodes:
             if ref not in pin_abs or pin not in pin_abs[ref]:
                 continue
             pax, pay = pin_abs[ref][pin]
             exx, exy = comp_extent[ref]
             lx, ly = outward(comp_pins[ref][pin], exx, exy)
-            ex, ey = find_label_spot(pax, pay, lx, ly, name)
+            ly = -ly  # 符号坐标系 Y 向上，原理图绝对坐标 Y 向下，翻转 Y 分量
+            ex, ey, dx, dy = find_label_spot(pax, pay, lx, ly, name)
             add_wire((pax, pay), (ex, ey))
             mark_wire((pax, pay), (ex, ey), name)
             lu = str(uuid.uuid4())
+            # 向左引出的标签必须右对齐，否则 KiCad 默认向右展开会把文字压回元件本体
+            just = ' (justify right)' if dx < 0 else ''
             wire_blocks.append(
                 f'  (label "{name}" (at {ex:.2f} {ey:.2f} 0) '
-                f'(effects (font (size 1.27 1.27))) (uuid "{lu}"))'
+                f'(effects (font (size 1.27 1.27)){just}) (uuid "{lu}"))'
             )
             occupied.setdefault(ckey(ex, ey), set()).add(name)
+            placed_label_rects.append(label_rect(ex, ey, name, dx, dy))
 
     # 9) 未连接引脚加 No-Connect 标记，消除 ERC 未连接报错（课本级干净）
     connected = set()
