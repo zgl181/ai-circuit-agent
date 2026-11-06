@@ -32,8 +32,10 @@ SYM_MAP = {
     "电阻": ("Device.kicad_sym", "R"), "resistor": ("Device.kicad_sym", "R"),
     "电容": ("Device.kicad_sym", "C"), "capacitor": ("Device.kicad_sym", "C"),
     "led": ("Device.kicad_sym", "LED"), "发光二极管": ("Device.kicad_sym", "LED"),
+    "发光": ("Device.kicad_sym", "LED"),
     "二极管": ("Device.kicad_sym", "D"), "diode": ("Device.kicad_sym", "D"),
     "开关": ("Switch.kicad_sym", "SW_Push"), "按钮": ("Switch.kicad_sym", "SW_Push"),
+    "按键": ("Switch.kicad_sym", "SW_Push"),
     "晶振": ("Device.kicad_sym", "Crystal"), "crystal": ("Device.kicad_sym", "Crystal"),
     "oscillator": ("Device.kicad_sym", "Crystal"),
     "磁珠": ("Device.kicad_sym", "FerriteBead"), "ferrite": ("Device.kicad_sym", "FerriteBead"),
@@ -226,6 +228,16 @@ def resolve_lib(comp, pin_count=2):
         pp = os.path.join(SYM_DIR, "74xx.kicad_sym")
         if os.path.exists(pp) and f'(symbol "{name}"' in open(pp, encoding="utf-8", errors="ignore").read():
             return "74xx.kicad_sym", name
+    # CH340G USB转串口（Interface_USB 库自带官方符号，脚号与数据手册一致）
+    val = (comp.get("value") or "").upper()
+    if "CH340" in val or "USB-UART" in t or "USB转串口" in t:
+        return "Interface_USB.kicad_sym", "CH340G"
+    # 电解电容（极性电容）
+    if "电解" in t:
+        return "Device.kicad_sym", "C_Polarized"
+    # 自恢复保险 / 保险丝
+    if "保险" in t or "fuse" in t:
+        return "Device.kicad_sym", "Fuse"
     # 连接器 / 排针：按实际用到的最大脚号选单排排针 Conn_01xNN（避免脚号不存在被丢弃）
     if any(w in t for w in ["连接器", "排针", "接头", "connector", "header", "插座"]):
         n = max(2, min(50, int(pin_count)))
@@ -400,10 +412,13 @@ def build_sch(design):
     SAFE_Y0, SAFE_Y1 = 74.0, 198.0
     LABEL_PAD = 14.0
     HALF = {  # 各符号半宽/半高(mm)，用于计算本体包围盒
-        "ATmega328P-M": (15, 20), "ATmega328P-P": (16, 30),
-        "Crystal": (5, 5), "C": (3, 3), "R": (3, 3),
+        "ATmega328P-M": (15, 20), "ATmega328P-P": (16, 32),
+        "CH340G": (6, 10),
+        "Crystal": (4, 4), "C": (4, 3), "C_Polarized": (4, 4), "Fuse": (4, 3),
+        "R": (3, 3), "LED": (3, 3),
         "SW_Push": (4, 4), "FerriteBead": (4, 4),
-        "Conn_01x02": (3, 4), "Conn_01x06": (3, 12), "Conn_01x08": (3, 15),
+        "Conn_01x05": (3, 6), "Conn_01x06": (3, 8),
+        "Conn_01x08": (3, 11), "Conn_01x14": (3, 18),
     }
 
     def half_for(ref):
@@ -419,19 +434,21 @@ def build_sch(design):
     # 课本式：围绕 MCU 布置功能元件（绝对坐标，已预先留好间距，互不重叠）
     # 注意 U1 为 DIP-28 直插符号(约 31×76mm)，居中偏上，排针放在下方/侧边空档。
     PLACE = {
-        "Y1":  (240, 150),   # 晶振：U1 右侧 XTAL 引脚间
-        "C2":  (255, 138),   # 22pF 负载电容（XTAL1 侧）
-        "C3":  (255, 162),   # 22pF 负载电容（XTAL2 侧）
-        "R1":  (240, 110),   # 复位上拉电阻：RESET 附近
-        "SW1": (240, 88),    # 复位按键
-        "C1":  (95, 150),    # 100nF 去耦：VCC 附近
-        "C4":  (95, 122),    # 10uF 电源滤波
-        "J1":  (240, 168),   # ISP 下载口：右侧
-        "L1":  (120, 188),   # 磁珠：VCC/AVCC 之间（顶部）
-        "C5":  (95, 188),    # AVCC 去耦电容（顶部）
-        "J2":  (185, 100),   # 排针（8P）：中下
-        "J3":  (130, 100),   # 排针（6P）：中下
-        "J4":  (110, 100),   # 排针（6P）：左下
+        # MCU 居中
+        "U1":  (128, 135),
+        # 顶部一行：晶振 + 负载电容 + 去耦
+        "Y1":  (62, 92),   "C1": (48, 92),   "C2": (76, 92),
+        "C3":  (100, 92),  "C11": (130, 92), "C4": (148, 92),
+        "Y2":  (235, 92),  "C6": (221, 92),  "C7": (249, 92),
+        # 中右：CH340G 及其周边（去耦、晶振、USB、保险）
+        "U2":  (235, 130), "C5": (255, 120), "C8": (255, 140),
+        "USB1":(255, 160), "F1": (235, 160),
+        # MCU 右侧：复位 / DTR / 滤波
+        "R1":  (165, 100), "SW1": (165, 118), "C9": (165, 136), "C10": (165, 154),
+        # 底部一行：排针（ICSP / 数字 / 模拟）+ 指示灯
+        "ICSP1":(95, 168), "H_D": (185, 162), "H_A": (215, 168),
+        "R2":  (70, 150),  "D1": (88, 150),
+        "R3":  (70, 168),  "D2": (88, 168),
     }
     for r, (px, py) in PLACE.items():
         if r in comp_set:
@@ -544,13 +561,22 @@ def build_sch(design):
                 occupied.setdefault(ckey(px, py), set()).add(nm)
 
     def find_label_spot(pax, pay, lx, ly, netname):
-        for step in range(0, 40):
+        for step in range(0, 60):
             d = 12.7 + step * 2.54
             ex, ey = pax + lx * d, pay + ly * d
             occ = occupied.get(ckey(ex, ey), set())
             if not any(n != netname for n in occ):
                 return ex, ey
-        return pax + lx * (12.7 + 39 * 2.54), pay + ly * (12.7 + 39 * 2.54)
+        return pax + lx * (12.7 + 59 * 2.54), pay + ly * (12.7 + 59 * 2.54)
+
+    def mark_wire(p1, p2, netname):
+        """把整条导线按 1mm 采样登记进 occupied，防止其它网络的标签/导线落在它上面造成误短路。"""
+        n = max(1, int(((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5 / 1.0))
+        for i in range(n + 1):
+            t = i / n
+            x = p1[0] + (p2[0] - p1[0]) * t
+            y = p1[1] + (p2[1] - p1[1]) * t
+            occupied.setdefault(ckey(x, y), set()).add(netname)
 
     for name, nodes in signal_nets:
         for (ref, pin) in nodes:
@@ -561,6 +587,7 @@ def build_sch(design):
             lx, ly = outward(comp_pins[ref][pin], exx, exy)
             ex, ey = find_label_spot(pax, pay, lx, ly, name)
             add_wire((pax, pay), (ex, ey))
+            mark_wire((pax, pay), (ex, ey), name)
             lu = str(uuid.uuid4())
             wire_blocks.append(
                 f'  (label "{name}" (at {ex:.2f} {ey:.2f} 0) '

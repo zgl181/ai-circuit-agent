@@ -12,6 +12,8 @@
 import json
 import os
 import sys
+import glob
+import shutil
 import subprocess
 import re
 import threading
@@ -54,7 +56,16 @@ def _write_outputs(design, prompt):
         [KICAD_CLI, "sch", "export", "svg", "--output", OUT, sch_path],
         capture_output=True, text=True,
     )
-    svg_ok = os.path.exists(svg_path)
+    # kicad-cli 有时会把 --output 目录当成顶层 sheet，生成 outputs/design.svg/design.svg
+    # 这种目录包裹要拍平，否则 /files/design.svg 路由会因 isfile() 为 False 而 404
+    if os.path.isdir(svg_path):
+        inner = sorted(glob.glob(os.path.join(svg_path, "*.svg")))
+        if inner:
+            tmp = os.path.join(OUT, "_design_flat.svg")
+            os.replace(inner[0], tmp)
+            shutil.rmtree(svg_path, ignore_errors=True)
+            os.replace(tmp, svg_path)
+    svg_ok = os.path.isfile(svg_path)
     svg = open(svg_path, encoding="utf-8", errors="ignore").read() if svg_ok else None
     return {
         "json": "design.json", "net": "design.net",

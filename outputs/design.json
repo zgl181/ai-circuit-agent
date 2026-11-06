@@ -1,204 +1,115 @@
 {
-  "board": "Arduino最小系统板",
+  "board": "Arduino最小系统板 (ATmega328P-PU + CH340G)",
   "components": [
-    {
-      "ref": "U1",
-      "type": "单片机",
-      "value": "ATmega328P",
-      "package": "DIP-28",
-      "quantity": 1,
-      "note": "主控芯片(直插DIP-28)"
-    },
-    {
-      "ref": "C1",
-      "type": "电容",
-      "value": "100nF",
-      "package": "0805",
-      "quantity": 1,
-      "note": "VCC去耦电容"
-    },
-    {
-      "ref": "C2",
-      "type": "电容",
-      "value": "22pF",
-      "package": "0805",
-      "quantity": 1,
-      "note": "晶振负载电容(XTAL1-GND)"
-    },
-    {
-      "ref": "C3",
-      "type": "电容",
-      "value": "22pF",
-      "package": "0805",
-      "quantity": 1,
-      "note": "晶振负载电容(XTAL2-GND)"
-    },
-    {
-      "ref": "C4",
-      "type": "电容",
-      "value": "10uF",
-      "package": "0805",
-      "quantity": 1,
-      "note": "电源滤波电容(VCC-GND)"
-    },
-    {
-      "ref": "Y1",
-      "type": "晶振",
-      "value": "16MHz",
-      "package": "HC-49S",
-      "quantity": 1,
-      "note": "主时钟"
-    },
-    {
-      "ref": "R1",
-      "type": "电阻",
-      "value": "10k",
-      "package": "0805",
-      "quantity": 1,
-      "note": "复位上拉电阻(RESET-VCC)"
-    },
-    {
-      "ref": "SW1",
-      "type": "按钮",
-      "value": "复位按键",
-      "package": "6x6x5",
-      "quantity": 1,
-      "note": "手动复位(RESET-GND)"
-    },
-    {
-      "ref": "L1",
-      "type": "磁珠",
-      "value": "FerriteBead",
-      "package": "0805",
-      "quantity": 1,
-      "note": "VCC与AVCC隔离磁珠"
-    },
-    {
-      "ref": "C5",
-      "type": "电容",
-      "value": "100nF",
-      "package": "0805",
-      "quantity": 1,
-      "note": "AVCC去耦电容(AVCC-GND)"
-    },
-    {
-      "ref": "J1",
-      "type": "连接器",
-      "value": "排针",
-      "package": "2x3",
-      "quantity": 1,
-      "note": "ISP下载接口"
-    },
-    {
-      "ref": "J2",
-      "type": "连接器",
-      "value": "排针",
-      "package": "1x8",
-      "quantity": 2,
-      "note": "数字IO排针"
-    },
-    {
-      "ref": "J3",
-      "type": "连接器",
-      "value": "排针",
-      "package": "1x6",
-      "quantity": 1,
-      "note": "模拟IO排针"
-    },
-    {
-      "ref": "J4",
-      "type": "连接器",
-      "value": "排针",
-      "package": "1x2",
-      "quantity": 1,
-      "note": "电源输入排针"
-    }
+    {"ref": "U1",  "type": "单片机",      "value": "ATmega328P-PU", "package": "DIP-28",          "quantity": 1, "note": "主控芯片(直插DIP-28)"},
+    {"ref": "U2",  "type": "USB-UART",    "value": "CH340G",        "package": "SOP-16",          "quantity": 1, "note": "USB转串口桥接"},
+    {"ref": "Y1",  "type": "晶振",        "value": "16MHz",         "package": "HC-49/US",        "quantity": 1, "note": "MCU主时钟"},
+    {"ref": "Y2",  "type": "晶振",        "value": "12MHz",         "package": "HC-49/US",        "quantity": 1, "note": "CH340时钟"},
+    {"ref": "C1",  "type": "电容",        "value": "22pF",          "package": "C0603",           "quantity": 1, "note": "Y1负载(XTAL1)"},
+    {"ref": "C2",  "type": "电容",        "value": "22pF",          "package": "C0603",           "quantity": 1, "note": "Y1负载(XTAL2)"},
+    {"ref": "C3",  "type": "电容",        "value": "100nF",         "package": "C0603",           "quantity": 1, "note": "U1 VCC去耦"},
+    {"ref": "C4",  "type": "电容",        "value": "100nF",         "package": "C0603",           "quantity": 1, "note": "U1 AVCC去耦"},
+    {"ref": "C5",  "type": "电容",        "value": "100nF",         "package": "C0603",           "quantity": 1, "note": "U2 VCC去耦"},
+    {"ref": "C6",  "type": "电容",        "value": "22pF",          "package": "C0603",           "quantity": 1, "note": "Y2负载(XI)"},
+    {"ref": "C7",  "type": "电容",        "value": "22pF",          "package": "C0603",           "quantity": 1, "note": "Y2负载(XO)"},
+    {"ref": "C8",  "type": "电容",        "value": "100nF",         "package": "C0603",           "quantity": 1, "note": "U2 V3去耦"},
+    {"ref": "C9",  "type": "电容",        "value": "100nF",         "package": "C0603",           "quantity": 1, "note": "DTR自动复位耦合"},
+    {"ref": "C10", "type": "电解电容",    "value": "10uF",          "package": "Electrolytic",    "quantity": 1, "note": "USB VBUS储能"},
+    {"ref": "C11", "type": "电容",        "value": "100nF",         "package": "C0603",           "quantity": 1, "note": "AREF去耦"},
+    {"ref": "R1",  "type": "电阻",        "value": "10k",           "package": "R0603",           "quantity": 1, "note": "RESET上拉"},
+    {"ref": "R2",  "type": "电阻",        "value": "1k",            "package": "R0603",           "quantity": 1, "note": "电源灯限流"},
+    {"ref": "R3",  "type": "电阻",        "value": "1k",            "package": "R0603",           "quantity": 1, "note": "D13灯限流"},
+    {"ref": "D1",  "type": "发光管",      "value": "Red 0603",      "package": "LED-0603",        "quantity": 1, "note": "电源指示"},
+    {"ref": "D2",  "type": "发光管",      "value": "Green 0603",    "package": "LED-0603",        "quantity": 1, "note": "D13用户灯"},
+    {"ref": "SW1", "type": "按键",        "value": "复位按键",       "package": "6x6x5",           "quantity": 1, "note": "复位(RESET-GND)"},
+    {"ref": "USB1","type": "USB连接器",   "value": "Micro USB-B",   "package": "USB-MICRO-B-SMD", "quantity": 1, "note": "VBUS/D-/D+/ID/GND"},
+    {"ref": "F1",  "type": "自恢复保险",  "value": "PTC 500mA",      "package": "SMD1206",         "quantity": 1, "note": "USB过流保护(可选)"},
+    {"ref": "ICSP1","type": "排针",       "value": "2.54mm 6P",     "package": "HDR-6",           "quantity": 1, "note": "ICSP/SPI"},
+    {"ref": "H_D", "type": "排针",        "value": "2.54mm 14P",    "package": "HDR-14",          "quantity": 1, "note": "数字口D0-D13"},
+    {"ref": "H_A", "type": "排针",        "value": "2.54mm 8P",     "package": "HDR-8",           "quantity": 1, "note": "模拟口A0-A5+GND+AREF"}
   ],
   "nets": [
-    {
-      "name": "VCC",
-      "nodes": [
-        {"ref": "U1", "pin": "7"},
-        {"ref": "C1", "pin": "1"},
-        {"ref": "C4", "pin": "1"},
-        {"ref": "R1", "pin": "1"},
-        {"ref": "J1", "pin": "2"},
-        {"ref": "J2", "pin": "1"},
-        {"ref": "J3", "pin": "1"},
-        {"ref": "J4", "pin": "1"},
-        {"ref": "L1", "pin": "1"}
-      ]
-    },
-    {
-      "name": "GND",
-      "nodes": [
-        {"ref": "U1", "pin": "8"},
-        {"ref": "U1", "pin": "22"},
-        {"ref": "C1", "pin": "2"},
-        {"ref": "C2", "pin": "2"},
-        {"ref": "C3", "pin": "2"},
-        {"ref": "C4", "pin": "2"},
-        {"ref": "C5", "pin": "2"},
-        {"ref": "SW1", "pin": "2"},
-        {"ref": "J1", "pin": "6"},
-        {"ref": "J2", "pin": "8"},
-        {"ref": "J3", "pin": "6"},
-        {"ref": "J4", "pin": "2"}
-      ]
-    },
-    {
-      "name": "AVCC",
-      "nodes": [
-        {"ref": "U1", "pin": "20"},
-        {"ref": "L1", "pin": "2"},
-        {"ref": "C5", "pin": "1"}
-      ]
-    },
-    {
-      "name": "RESET",
-      "nodes": [
-        {"ref": "U1", "pin": "1"},
-        {"ref": "R1", "pin": "2"},
-        {"ref": "SW1", "pin": "1"},
-        {"ref": "J1", "pin": "5"}
-      ]
-    },
-    {
-      "name": "XTAL1",
-      "nodes": [
-        {"ref": "U1", "pin": "9"},
-        {"ref": "Y1", "pin": "1"},
-        {"ref": "C2", "pin": "1"}
-      ]
-    },
-    {
-      "name": "XTAL2",
-      "nodes": [
-        {"ref": "U1", "pin": "10"},
-        {"ref": "Y1", "pin": "2"},
-        {"ref": "C3", "pin": "1"}
-      ]
-    },
-    {
-      "name": "ISP_MOSI",
-      "nodes": [
-        {"ref": "U1", "pin": "17"},
-        {"ref": "J1", "pin": "4"}
-      ]
-    },
-    {
-      "name": "ISP_MISO",
-      "nodes": [
-        {"ref": "U1", "pin": "18"},
-        {"ref": "J1", "pin": "1"}
-      ]
-    },
-    {
-      "name": "ISP_SCK",
-      "nodes": [
-        {"ref": "U1", "pin": "19"},
-        {"ref": "J1", "pin": "3"}
-      ]
-    }
+    {"name": "GND", "nodes": [
+      {"ref":"U1","pin":"8"},{"ref":"U1","pin":"22"},{"ref":"U2","pin":"1"},
+      {"ref":"USB1","pin":"5"},{"ref":"SW1","pin":"2"},
+      {"ref":"C1","pin":"2"},{"ref":"C2","pin":"2"},{"ref":"C3","pin":"2"},{"ref":"C4","pin":"2"},
+      {"ref":"C5","pin":"2"},{"ref":"C6","pin":"2"},      {"ref":"C7","pin":"2"},{"ref":"C8","pin":"2"},
+      {"ref":"C10","pin":"2"},{"ref":"C11","pin":"2"},
+      {"ref":"D1","pin":"2"},{"ref":"D2","pin":"2"},
+      {"ref":"ICSP1","pin":"6"},{"ref":"F1","pin":"2"},{"ref":"H_A","pin":"7"}
+    ]},
+    {"name": "+5V", "nodes": [
+      {"ref":"U1","pin":"7"},{"ref":"U1","pin":"20"},{"ref":"U2","pin":"16"},
+      {"ref":"USB1","pin":"1"},{"ref":"C3","pin":"1"},{"ref":"C4","pin":"1"},{"ref":"C5","pin":"1"},
+      {"ref":"C10","pin":"1"},{"ref":"R1","pin":"1"},{"ref":"R2","pin":"1"},
+      {"ref":"ICSP1","pin":"2"},{"ref":"F1","pin":"1"}
+    ]},
+    {"name": "RESET", "nodes": [
+      {"ref":"U1","pin":"1"},{"ref":"R1","pin":"2"},{"ref":"SW1","pin":"1"},
+      {"ref":"ICSP1","pin":"5"},{"ref":"C9","pin":"2"}
+    ]},
+    {"name": "XTAL1", "nodes": [
+      {"ref":"U1","pin":"9"},{"ref":"Y1","pin":"1"},{"ref":"C1","pin":"1"}
+    ]},
+    {"name": "XTAL2", "nodes": [
+      {"ref":"U1","pin":"10"},{"ref":"Y1","pin":"2"},{"ref":"C2","pin":"1"}
+    ]},
+    {"name": "USB_D+", "nodes": [
+      {"ref":"USB1","pin":"3"},{"ref":"U2","pin":"5"}
+    ]},
+    {"name": "USB_D-", "nodes": [
+      {"ref":"USB1","pin":"2"},{"ref":"U2","pin":"6"}
+    ]},
+    {"name": "CHG_XI", "nodes": [
+      {"ref":"U2","pin":"7"},{"ref":"Y2","pin":"1"},{"ref":"C6","pin":"1"}
+    ]},
+    {"name": "CHG_XO", "nodes": [
+      {"ref":"U2","pin":"8"},{"ref":"Y2","pin":"2"},{"ref":"C7","pin":"1"}
+    ]},
+    {"name": "CHG_V3", "nodes": [
+      {"ref":"U2","pin":"4"},{"ref":"C8","pin":"1"}
+    ]},
+    {"name": "UART_TX", "nodes": [
+      {"ref":"U2","pin":"2"},{"ref":"U1","pin":"2"},{"ref":"H_D","pin":"1"}
+    ]},
+    {"name": "UART_RX", "nodes": [
+      {"ref":"U2","pin":"3"},{"ref":"U1","pin":"3"},{"ref":"H_D","pin":"2"}
+    ]},
+    {"name": "DTR_RST", "nodes": [
+      {"ref":"U2","pin":"13"},{"ref":"C9","pin":"1"}
+    ]},
+    {"name": "AREF", "nodes": [
+      {"ref":"U1","pin":"21"},{"ref":"C11","pin":"1"},{"ref":"H_A","pin":"8"}
+    ]},
+    {"name": "SPI_MOSI", "nodes": [
+      {"ref":"U1","pin":"17"},{"ref":"ICSP1","pin":"4"},{"ref":"H_D","pin":"12"}
+    ]},
+    {"name": "SPI_MISO", "nodes": [
+      {"ref":"U1","pin":"18"},{"ref":"ICSP1","pin":"1"},{"ref":"H_D","pin":"13"}
+    ]},
+    {"name": "D13", "nodes": [
+      {"ref":"U1","pin":"19"},{"ref":"ICSP1","pin":"3"},{"ref":"R3","pin":"1"},{"ref":"H_D","pin":"14"}
+    ]},
+    {"name": "LED_PWR", "nodes": [
+      {"ref":"R2","pin":"2"},{"ref":"D1","pin":"1"}
+    ]},
+    {"name": "LED_D13", "nodes": [
+      {"ref":"R3","pin":"2"},{"ref":"D2","pin":"1"}
+    ]},
+    {"name": "D2", "nodes": [{"ref":"U1","pin":"4"},{"ref":"H_D","pin":"3"}]},
+    {"name": "D3", "nodes": [{"ref":"U1","pin":"5"},{"ref":"H_D","pin":"4"}]},
+    {"name": "D4", "nodes": [{"ref":"U1","pin":"6"},{"ref":"H_D","pin":"5"}]},
+    {"name": "D5", "nodes": [{"ref":"U1","pin":"11"},{"ref":"H_D","pin":"6"}]},
+    {"name": "D6", "nodes": [{"ref":"U1","pin":"12"},{"ref":"H_D","pin":"7"}]},
+    {"name": "D7", "nodes": [{"ref":"U1","pin":"13"},{"ref":"H_D","pin":"8"}]},
+    {"name": "D8", "nodes": [{"ref":"U1","pin":"14"},{"ref":"H_D","pin":"9"}]},
+    {"name": "D9", "nodes": [{"ref":"U1","pin":"15"},{"ref":"H_D","pin":"10"}]},
+    {"name": "D10", "nodes": [{"ref":"U1","pin":"16"},{"ref":"H_D","pin":"11"}]},
+    {"name": "A0", "nodes": [{"ref":"U1","pin":"23"},{"ref":"H_A","pin":"1"}]},
+    {"name": "A1", "nodes": [{"ref":"U1","pin":"24"},{"ref":"H_A","pin":"2"}]},
+    {"name": "A2", "nodes": [{"ref":"U1","pin":"25"},{"ref":"H_A","pin":"3"}]},
+    {"name": "A3", "nodes": [{"ref":"U1","pin":"26"},{"ref":"H_A","pin":"4"}]},
+    {"name": "A4", "nodes": [{"ref":"U1","pin":"27"},{"ref":"H_A","pin":"5"}]},
+    {"name": "A5", "nodes": [{"ref":"U1","pin":"28"},{"ref":"H_A","pin":"6"}]}
   ]
 }
