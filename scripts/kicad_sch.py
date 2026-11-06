@@ -230,6 +230,13 @@ def resolve_lib(comp, pin_count=2):
     if any(w in t for w in ["连接器", "排针", "接头", "connector", "header", "插座"]):
         n = max(2, min(50, int(pin_count)))
         return "Connector_Generic.kicad_sym", f"Conn_01x{n:02d}"
+    # 单片机：按封装(DIP/QFN)选择对应符号，确保脚号体系与 package 一致
+    if "单片机" in t or t == "mcu":
+        pkg = (comp.get("package") or "").upper()
+        val = (comp.get("value") or "").upper()
+        if "DIP" in pkg or "DIP" in val:
+            return "MCU_Microchip_ATmega.kicad_sym", "ATmega328P-P"
+        return "MCU_Microchip_ATmega.kicad_sym", "ATmega328P-M"
     for k, (lf, sn) in SYM_MAP.items():
         if k.lower() in t:
             return lf, sn
@@ -385,49 +392,72 @@ def build_sch(design):
     if mcu is None and comps:
         mcu = comps[0]
 
-    cx, cy = 130.0, 115.0
+    # ---- 3) 布局（课本风格，且整体约束在标题栏之上的安全区）----
+    # A4 = 297 × 210 (mm)。KiCad 的标题栏固定渲染在页面底部（约 Y∈[0,52]），
+    # 因此所有元件（连同向外引出的网络标签，约 14mm）都必须留在 Y≥74 之上，
+    # 否则会与标题栏文字重叠。下方 SAFE 区 + clamp 双重保证。
+    SAFE_X0, SAFE_X1 = 28.0, 270.0
+    SAFE_Y0, SAFE_Y1 = 74.0, 198.0
+    LABEL_PAD = 14.0
+    HALF = {  # 各符号半宽/半高(mm)，用于计算本体包围盒
+        "ATmega328P-M": (15, 20), "ATmega328P-P": (16, 30),
+        "Crystal": (5, 5), "C": (3, 3), "R": (3, 3),
+        "SW_Push": (4, 4), "FerriteBead": (4, 4),
+        "Conn_01x02": (3, 4), "Conn_01x06": (3, 12), "Conn_01x08": (3, 15),
+    }
+
+    def half_for(ref):
+        lid = comp_lib[ref][0]
+        sym = lid.split(":")[-1]
+        return HALF.get(sym, (6, 6))
+
+    cx, cy = 155.0, 138.0
     comp_set = {c["ref"] for c in comps}
     if mcu is not None:
         pos[mcu["ref"]] = (cx, cy)
 
-    # 相对 MCU 中心的课本式偏移（mm）。全部约束在 A4(297×210) 可见区内：
-    # 元件中心 X∈[80,225], Y∈[50,180]，标题栏在底边，上下各留边距。
-    REL = {
-        "Y1":  (65.0, 5.0),    # 晶振：U1 右侧，夹在两个 XTAL 引脚之间
-        "C2":  (95.0, -5.0),   # 22pF 负载电容（XTAL1 侧）
-        "C3":  (95.0, 15.0),   # 22pF 负载电容（XTAL2 侧）
-        "R1":  (60.0, 45.0),   # 复位上拉电阻：右侧 RESET 附近
-        "SW1": (60.0, 65.0),   # 复位按键
-        "C1":  (-50.0, -35.0), # 100nF 去耦：左上 VCC 附近
-        "C4":  (-50.0, -60.0), # 10uF 电源滤波：左上
-        "J1":  (90.0, 10.0),   # ISP 下载口：右侧偏下
-        "L1":  (45.0, 35.0),   # 磁珠：右侧，VCC/AVCC 之间
-        "C5":  (45.0, 60.0),   # AVCC 去耦电容：磁珠下方
+    # 课本式：围绕 MCU 布置功能元件（绝对坐标，已预先留好间距，互不重叠）
+    # 注意 U1 为 DIP-28 直插符号(约 31×76mm)，居中偏上，排针放在下方/侧边空档。
+    PLACE = {
+        "Y1":  (240, 150),   # 晶振：U1 右侧 XTAL 引脚间
+        "C2":  (255, 138),   # 22pF 负载电容（XTAL1 侧）
+        "C3":  (255, 162),   # 22pF 负载电容（XTAL2 侧）
+        "R1":  (240, 110),   # 复位上拉电阻：RESET 附近
+        "SW1": (240, 88),    # 复位按键
+        "C1":  (95, 150),    # 100nF 去耦：VCC 附近
+        "C4":  (95, 122),    # 10uF 电源滤波
+        "J1":  (240, 168),   # ISP 下载口：右侧
+        "L1":  (120, 188),   # 磁珠：VCC/AVCC 之间（顶部）
+        "C5":  (95, 188),    # AVCC 去耦电容（顶部）
+        "J2":  (185, 100),   # 排针（8P）：中下
+        "J3":  (130, 100),   # 排针（6P）：中下
+        "J4":  (110, 100),   # 排针（6P）：左下
     }
-    for r, (dx2, dy2) in REL.items():
+    for r, (px, py) in PLACE.items():
         if r in comp_set:
-            pos[r] = (cx + dx2, cy + dy2)
+            pos[r] = (px, py)
 
-    # 排针/接头（未在上表中的）：沿底边整齐排成一排（Y=50，紧挨标题栏上方，确保留在页面内）
-    headers = [c["ref"] for c in comps
-               if any(w in c.get("type", "").lower() for w in
-                      ["连接器", "排针", "接头", "connector", "header", "插座"])
-               and c["ref"] not in pos]
-    hx0, hy = 60.0, 50.0
-    for i, r in enumerate(headers):
-        pos[r] = (hx0 + i * 70.0, hy)
-
-    # 其余未定位的元件用网格兜底（同样限制在页面内）
+    # 未显式放置的元件用网格兜底（落在安全区内）
     leftover = [c["ref"] for c in comps if c["ref"] not in pos]
     gi = 0
     for r in leftover:
-        pos[r] = (60.0 + (gi % 4) * 60.0, 60.0 + (gi // 4) * 45.0)
+        pos[r] = (60.0 + (gi % 4) * 55.0, 120.0 + (gi // 4) * 40.0)
         gi += 1
 
-    # 兜底：把所有元件中心限制在 A4 可见区内，杜绝任何元件跑到页面外
+    # 兜底：把"元件本体 + 向外引出标签"整体限制在安全区内，
+    # 杜绝任何元件压到标题栏或越过边框。
     for r in pos:
+        hx, hy = half_for(r)
         x, y = pos[r]
-        pos[r] = (max(25.0, min(275.0, x)), max(30.0, min(195.0, y)))
+        x0 = SAFE_X0 + hx + LABEL_PAD
+        x1 = SAFE_X1 - hx - LABEL_PAD
+        y0 = SAFE_Y0 + hy + LABEL_PAD
+        y1 = SAFE_Y1 - hy - LABEL_PAD
+        if x0 > x1:
+            x0 = x1 = (SAFE_X0 + SAFE_X1) / 2.0
+        if y0 > y1:
+            y0 = y1 = (SAFE_Y0 + SAFE_Y1) / 2.0
+        pos[r] = (max(x0, min(x1, x)), max(y0, min(y1, y)))
 
     # 4) 计算各引脚绝对坐标（库符号 Y 向上，原理图 Y 向下 -> 翻转 Y）
     pin_abs = {}
@@ -496,6 +526,32 @@ def build_sch(design):
     signal_nets = list(valid_nets)
 
     # 8) 信号网络：每个引脚外引 stub + 同名 net label（避免长线穿越元件）
+    #    关键约束：KiCad 中“坐标相同的两个不同网络标签/引脚”会被误判为同一网络而短路。
+    #    因此放标签前必须做坐标唯一性检查——若目标点已被“不同网络”的引脚或标签占用，
+    #    则沿引脚朝外方向逐步外推寻找空位，连线随之延长（标签网络由所连导线决定，挪位不影响归属）。
+    def ckey(x, y):
+        return (round(x, 1), round(y, 1))
+
+    occupied = {}                 # (rx, ry) -> set(网络名)
+    net_of_pin = {}              # (ref, pin) -> 网络名
+    for nm, nodes in valid_nets:
+        for (ref, pin) in nodes:
+            net_of_pin[(ref, pin)] = nm
+    for ref in pin_abs:
+        for pin, (px, py) in pin_abs[ref].items():
+            nm = net_of_pin.get((ref, pin))
+            if nm:
+                occupied.setdefault(ckey(px, py), set()).add(nm)
+
+    def find_label_spot(pax, pay, lx, ly, netname):
+        for step in range(0, 40):
+            d = 12.7 + step * 2.54
+            ex, ey = pax + lx * d, pay + ly * d
+            occ = occupied.get(ckey(ex, ey), set())
+            if not any(n != netname for n in occ):
+                return ex, ey
+        return pax + lx * (12.7 + 39 * 2.54), pay + ly * (12.7 + 39 * 2.54)
+
     for name, nodes in signal_nets:
         for (ref, pin) in nodes:
             if ref not in pin_abs or pin not in pin_abs[ref]:
@@ -503,13 +559,14 @@ def build_sch(design):
             pax, pay = pin_abs[ref][pin]
             exx, exy = comp_extent[ref]
             lx, ly = outward(comp_pins[ref][pin], exx, exy)
-            ex, ey = pax + lx * 12.7, pay + ly * 12.7
+            ex, ey = find_label_spot(pax, pay, lx, ly, name)
             add_wire((pax, pay), (ex, ey))
             lu = str(uuid.uuid4())
             wire_blocks.append(
                 f'  (label "{name}" (at {ex:.2f} {ey:.2f} 0) '
                 f'(effects (font (size 1.27 1.27))) (uuid "{lu}"))'
             )
+            occupied.setdefault(ckey(ex, ey), set()).add(name)
 
     # 9) 未连接引脚加 No-Connect 标记，消除 ERC 未连接报错（课本级干净）
     connected = set()

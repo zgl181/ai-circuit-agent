@@ -5,17 +5,9 @@
       "ref": "U1",
       "type": "单片机",
       "value": "ATmega328P",
-      "package": "TQFP-32",
+      "package": "DIP-28",
       "quantity": 1,
-      "note": "主控芯片"
-    },
-    {
-      "ref": "Y1",
-      "type": "晶振",
-      "value": "16MHz",
-      "package": "HC-49S",
-      "quantity": 1,
-      "note": "主时钟"
+      "note": "主控芯片(直插DIP-28)"
     },
     {
       "ref": "C1",
@@ -23,7 +15,7 @@
       "value": "100nF",
       "package": "0805",
       "quantity": 1,
-      "note": "去耦电容(VCC-GND)"
+      "note": "VCC去耦电容"
     },
     {
       "ref": "C2",
@@ -47,23 +39,15 @@
       "value": "10uF",
       "package": "0805",
       "quantity": 1,
-      "note": "电源滤波(VCC-GND)"
+      "note": "电源滤波电容(VCC-GND)"
     },
     {
-      "ref": "L1",
-      "type": "磁珠",
-      "value": "FerriteBead",
-      "package": "0805",
+      "ref": "Y1",
+      "type": "晶振",
+      "value": "16MHz",
+      "package": "HC-49S",
       "quantity": 1,
-      "note": "磁珠：隔离 VCC 与 AVCC(模拟电源)"
-    },
-    {
-      "ref": "C5",
-      "type": "电容",
-      "value": "100nF",
-      "package": "0805",
-      "quantity": 1,
-      "note": "AVCC去耦电容(AVCC-GND)"
+      "note": "主时钟"
     },
     {
       "ref": "R1",
@@ -71,7 +55,7 @@
       "value": "10k",
       "package": "0805",
       "quantity": 1,
-      "note": "复位上拉电阻(VCC-RESET)"
+      "note": "复位上拉电阻(RESET-VCC)"
     },
     {
       "ref": "SW1",
@@ -82,19 +66,35 @@
       "note": "手动复位(RESET-GND)"
     },
     {
+      "ref": "L1",
+      "type": "磁珠",
+      "value": "FerriteBead",
+      "package": "0805",
+      "quantity": 1,
+      "note": "VCC与AVCC隔离磁珠"
+    },
+    {
+      "ref": "C5",
+      "type": "电容",
+      "value": "100nF",
+      "package": "0805",
+      "quantity": 1,
+      "note": "AVCC去耦电容(AVCC-GND)"
+    },
+    {
       "ref": "J1",
       "type": "连接器",
       "value": "排针",
       "package": "2x3",
       "quantity": 1,
-      "note": "ISP下载接口(MISO VCC SCK MOSI RESET GND)"
+      "note": "ISP下载接口"
     },
     {
       "ref": "J2",
       "type": "连接器",
       "value": "排针",
       "package": "1x8",
-      "quantity": 1,
+      "quantity": 2,
       "note": "数字IO排针"
     },
     {
@@ -118,6 +118,7 @@
     {
       "name": "VCC",
       "nodes": [
+        {"ref": "U1", "pin": "7"},
         {"ref": "C1", "pin": "1"},
         {"ref": "C4", "pin": "1"},
         {"ref": "R1", "pin": "1"},
@@ -125,82 +126,78 @@
         {"ref": "J2", "pin": "1"},
         {"ref": "J3", "pin": "1"},
         {"ref": "J4", "pin": "1"},
-        {"ref": "U1", "pin": "4"},
-        {"ref": "U1", "pin": "6"},
         {"ref": "L1", "pin": "1"}
-      ]
-    },
-    {
-      "name": "AVCC",
-      "nodes": [
-        {"ref": "U1", "pin": "18"},
-        {"ref": "L1", "pin": "2"},
-        {"ref": "C5", "pin": "1"}
       ]
     },
     {
       "name": "GND",
       "nodes": [
+        {"ref": "U1", "pin": "8"},
+        {"ref": "U1", "pin": "22"},
         {"ref": "C1", "pin": "2"},
         {"ref": "C2", "pin": "2"},
         {"ref": "C3", "pin": "2"},
         {"ref": "C4", "pin": "2"},
+        {"ref": "C5", "pin": "2"},
         {"ref": "SW1", "pin": "2"},
         {"ref": "J1", "pin": "6"},
         {"ref": "J2", "pin": "8"},
         {"ref": "J3", "pin": "6"},
-        {"ref": "J4", "pin": "2"},
-        {"ref": "U1", "pin": "3"},
-        {"ref": "U1", "pin": "5"},
-        {"ref": "U1", "pin": "21"},
-        {"ref": "U1", "pin": "33"},
-        {"ref": "C5", "pin": "2"}
+        {"ref": "J4", "pin": "2"}
+      ]
+    },
+    {
+      "name": "AVCC",
+      "nodes": [
+        {"ref": "U1", "pin": "20"},
+        {"ref": "L1", "pin": "2"},
+        {"ref": "C5", "pin": "1"}
       ]
     },
     {
       "name": "RESET",
       "nodes": [
+        {"ref": "U1", "pin": "1"},
         {"ref": "R1", "pin": "2"},
         {"ref": "SW1", "pin": "1"},
-        {"ref": "U1", "pin": "29"},
         {"ref": "J1", "pin": "5"}
       ]
     },
     {
       "name": "XTAL1",
       "nodes": [
+        {"ref": "U1", "pin": "9"},
         {"ref": "Y1", "pin": "1"},
-        {"ref": "C2", "pin": "1"},
-        {"ref": "U1", "pin": "7"}
+        {"ref": "C2", "pin": "1"}
       ]
     },
     {
       "name": "XTAL2",
       "nodes": [
+        {"ref": "U1", "pin": "10"},
         {"ref": "Y1", "pin": "2"},
-        {"ref": "C3", "pin": "1"},
-        {"ref": "U1", "pin": "8"}
+        {"ref": "C3", "pin": "1"}
       ]
     },
     {
       "name": "ISP_MOSI",
       "nodes": [
-        {"ref": "J1", "pin": "4"},
-        {"ref": "U1", "pin": "15"}
+        {"ref": "U1", "pin": "17"},
+        {"ref": "J1", "pin": "4"}
       ]
     },
     {
       "name": "ISP_MISO",
       "nodes": [
-        {"ref": "J1", "pin": "1"},
-        {"ref": "U1", "pin": "16"}
+        {"ref": "U1", "pin": "18"},
+        {"ref": "J1", "pin": "1"}
       ]
     },
     {
       "name": "ISP_SCK",
       "nodes": [
-        {"ref": "J1", "pin": "3"},
-        {"ref": "U1", "pin": "17"}
+        {"ref": "U1", "pin": "19"},
+        {"ref": "J1", "pin": "3"}
       ]
     }
   ]
