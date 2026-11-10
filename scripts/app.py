@@ -135,7 +135,10 @@ class Handler(BaseHTTPRequestHandler):
         if u.path.startswith("/files/"):
             fp = os.path.join(OUT, os.path.basename(u.path))
             if os.path.isfile(fp):
-                send(self, 200, open(fp, "rb").read(), "application/octet-stream")
+                # SVG 需要正确的 MIME，浏览器才会把它当图片渲染（而非下载）
+                ctype = ("image/svg+xml; charset=utf-8" if fp.endswith(".svg")
+                         else "application/octet-stream")
+                send(self, 200, open(fp, "rb").read(), ctype)
             else:
                 send(self, 404, "文件不存在")
             return

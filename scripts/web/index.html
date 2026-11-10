@@ -103,7 +103,11 @@
   <div class="card" id="result" style="display:none">
     <h2>生成结果 <span class="badge" id="summary"></span></h2>
     <div class="downloads" id="downloads"></div>
-    <h2 style="margin-top:16px">原理图预览</h2>
+    <h2 style="margin-top:16px">预览
+      <button id="viewSch" onclick="showPreview('sch')" style="font-size:12px;padding:3px 10px;margin-left:10px;cursor:pointer">原理图</button>
+      <button id="viewPcb" onclick="showPreview('pcb')" style="font-size:12px;padding:3px 10px;cursor:pointer">PCB 布局</button>
+    </h2>
+    <div class="hint" style="margin-bottom:6px">原理图随每次生成实时更新；PCB 预览为示例设计（Arduino 最小系统板）的布局布线结果，可在 KiCad 中打开 design.kicad_pcb 查看完整铜皮。</div>
     <div id="svgbox"><div class="empty">（无预览）</div></div>
     <h2 style="margin-top:16px">元件清单 (BOM)</h2>
     <div id="bom"></div>
@@ -201,12 +205,24 @@ async function generate(){
     } else setStatus("请求出错："+err,"err");
   }finally{ go.disabled=false; }
 }
+// ---------- 预览切换：原理图（实时）/ PCB 布局（示例设计） ----------
+let schSvgHtml='';
+function showPreview(kind){
+  const pcb = kind==="pcb";
+  $("svgbox").innerHTML = pcb
+    ? '<img src="/files/pcb.svg" alt="PCB 布局预览" style="width:100%;height:auto;display:block">'
+    : (schSvgHtml||'<div class="empty">（无预览）</div>');
+  $("viewSch").style.fontWeight = pcb ? "400" : "600";
+  $("viewPcb").style.fontWeight = pcb ? "600" : "400";
+}
 function render(d){
   $("result").style.display="block";
   $("summary").textContent=d.summary||"";
   const f=d.files||{};
-  $("downloads").innerHTML=["json","net","sch","svg"].map(k=>`<a href="/files/${f[k]}" download>下载 ${f[k]}</a>`).join("");
-  $("svgbox").innerHTML=(d.svg_ok&&d.svg)?d.svg:'<div class="empty">原理图已生成，但预览不可用（仍可用 KiCad 打开 .kicad_sch）</div>';
+  $("downloads").innerHTML=["json","net","sch","svg"].map(k=>`<a href="/files/${f[k]}" download>下载 ${f[k]}</a>`).join("")
+    +'<a href="/files/design.kicad_pcb" download>下载 design.kicad_pcb（示例板）</a>';
+  schSvgHtml=(d.svg_ok&&d.svg)?d.svg:'<div class="empty">原理图已生成，但预览不可用（仍可用 KiCad 打开 .kicad_sch）</div>';
+  showPreview("sch");
   const comps=d.components||[];
   let html='<table><thead><tr><th>位号</th><th>类型</th><th>参数</th><th>封装</th><th>数量</th><th>备注</th></tr></thead><tbody>';
   for(const c of comps) html+=`<tr><td>${esc(c.ref)}</td><td>${esc(c.type)}</td><td>${esc(c.value)}</td><td>${esc(c.package)}</td><td>${esc(c.quantity)}</td><td>${esc(c.note||"")}</td></tr>`;

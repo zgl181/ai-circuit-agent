@@ -10,7 +10,7 @@
 
 ## 效果
 
-一句需求 → 四个产物：
+一句需求 → 原理图 → PCB 全链路产物：
 
 | 产物 | 说明 |
 |---|---|
@@ -18,17 +18,24 @@
 | `outputs/design.net` | KiCad 标准网表（可直接给 pcbnew 做布局） |
 | `outputs/design.kicad_sch` | KiCad 8 原理图，**双击即可打开** |
 | `outputs/design.svg` | 原理图预览图（用于网页展示 / 自动校验） |
+| `outputs/design.kicad_pcb` | KiCad 8 **PCB 板文件**：真实官方封装 + 自动布局 + 双层走线 + 两层 GND 铺铜 |
+| `outputs/board_routes.json` | 自动布线结果（每条走线的网络、层、折点、过孔） |
+| `outputs/drc_report_summary.json` | DRC 闭环报告：每轮违规数 / 未连接数下降曲线与最终统计 |
+| `outputs/pcb.svg` / `pcb_preview.png` | PCB 顶层装配视图（隐藏铜皮，便于看清元件与走线） |
 
-生成的原理图会**自动通过 `kicad-cli` 反向导出网表做连通性校验**，确认导线真的连到了引脚上，而不是"只画了好看的线"。
+原理图和 PCB 都会**自动通过 `kicad-cli` 反向校验**：前者反导网表逐引脚比对，后者跑 DRC 并用报告反向驱动布线，确认不是"只画了好看的线"。
 
 ## 功能特性
 
 - **自然语言 → 结构化设计**：LLM 输出固定 JSON（BOM + 网表），带自检（位号引用一致性）
 - **生成真实可用的 KiCad 8 原理图**：内嵌真实符号定义，文件自包含，无需额外库表
 - **正交自动布线 + 网络名标签**：先横后竖连线，网络名贴在导线中点
-- **本地网页界面**：零前端框架（Python 标准库 `http.server`），输入需求 → 看 BOM / 网表 / 原理图预览
+- **PCB 自动布局布线（进阶）**：26 个元件全部映射到 KiCad 官方封装，按 5 个功能分区 shelf-packing 排布，34 个网络逐焊盘绑定；双层 0.5mm 网格 A* 自动布线，自动打过孔换层
+- **DRC 闭环（进阶）**：`kicad-cli pcb drc --format json` 报出「项目之间的连接缺失」→ 解析两个焊盘的精确坐标与网络名 → 自动补线 → 重跑 DRC，逐轮让未连接项下降
+- **GND 铺铜**：F.Cu / B.Cu 全板敷铜，自动避让其它网络，一次性连通所有地焊盘
+- **本地网页界面**：零前端框架，原理图 / PCB 预览一键切换，可下载 `.kicad_pcb`
 - **MongoDB 后端（可选）**：设计历史、多用户登录、LLM 结果缓存、多 Agent 共享状态；**未安装 mongod 时自动退化为内存版 mongomock，照样能跑**
-- **自动校验**：`kicad-cli sch export svg`（能否打开）+ `sch export netlist`（连接是否正确）
+- **五项一键自检**：网表一致性 / ERC / 排版几何 / 导线穿模 / PCB 与 DRC 闭环
 
 ## 技术架构
 
@@ -60,6 +67,9 @@
 │   ├── design_agent.py     # 自然语言 -> BOM + 网表 JSON（真调 LLM）
 │   ├── kicad_net.py        # JSON -> KiCad 网表 .net
 │   ├── kicad_sch.py        # JSON -> KiCad 8 原理图 .kicad_sch（内嵌符号 + 正交布线）
+│   ├── kicad_pcb.py        # JSON -> KiCad 8 PCB（官方封装 + 分区布局 + 走线 + 铺铜）
+│   ├── drc_loop.py         # DRC 报告 -> 双层 A* 自动补线 -> 重跑 DRC 的闭环编排
+│   ├── verify_schematic.py # 五项一键自检（原理图 A–D + PCB/DRC E）
 │   ├── llm_client.py       # LLM 客户端（读取 .env）
 │   ├── db.py               # MongoDB 数据层（自动退化 mongomock）
 │   ├── app.py              # 本地网页服务（注册/登录/生成/历史/共享状态）
@@ -127,6 +137,24 @@ python scripts/kicad_net.py outputs/design.json outputs/design.net
 python scripts/kicad_sch.py outputs/design.json outputs/design.kicad_sch
 ```
 
+### 方式一（续）：PCB 与 DRC 闭环（进阶）
+
+PCB 用 `pcbnew` Python API，**必须用 KiCad 自带的 Python 运行**（项目 `.venv` 里没有 pcbnew）：
+
+```bash
+# 4) JSON -> PCB（真实封装、分区布局、GND 铺铜）
+"C:/Users/24013/Desktop/工具/bin/python.exe" scripts/kicad_pcb.py
+
+# 5) DRC 闭环：自动布线 + 迭代校验，一步到位（内部会反复调用 4）
+"C:/Users/24013/Desktop/工具/bin/python.exe" scripts/drc_loop.py --max-iter 7
+
+# 6) 五项一键自检
+python scripts/verify_schematic.py
+```
+
+KiCad 路径不同可用环境变量覆盖：`KICAD_FP_DIR`（封装库）、`KICAD_CLI`（命令行工具）。
+`drc_loop.py` 会在最后一轮自动起一个独立进程填充铜皮，避开 pcbnew 在同一进程反复 zone fill 的段错误。
+
 ### 方式二：网页界面（推荐）
 
 ```bash
@@ -182,7 +210,7 @@ MongoDB 8.0 便携版已下载解压到本机，普通用户即可运行：
 python scripts/verify_schematic.py
 ```
 
-该脚本校验四项，全部通过才返回退出码 0（可直接用于答辩演示或 CI）：
+该脚本校验五项，全部通过才返回退出码 0（可直接用于答辩演示或 CI）：
 
 | 检查 | 方法 | 当前结果 |
 | --- | --- | --- |
@@ -190,6 +218,7 @@ python scripts/verify_schematic.py
 | B. 电气规则 | 解析 `erc.txt`，统计 `; error` | 0 error（140 条为 `endpoint_off_grid` / `lib_symbol_issues` 提示，不影响电气） |
 | C. 排版几何 | 解析 `.kicad_sch` **内嵌符号的真实引脚坐标**，检查元件重叠、标签压元件、标签互相叠字、超出 A4 图框 | 26 元件 / 108 标签，4 项均为 0 |
 | D. 导线不穿模 | 逐段采样导线，检查其中段是否穿过任何元件本体（两端各跳过 4.5mm 引脚区） | 108 段导线，穿模 0 段 |
+| E. PCB / DRC 闭环 | 检查板文件、走线、闭环报告齐备；设计规则违规必须为 0，且未连接项须比首轮明显下降 | 违规 0，未连接 58 → 22 |
 
 原理图为 A4 横向（`viewBox = 297×210mm`），采用**论文插画式**版面：
 
@@ -200,19 +229,52 @@ python scripts/verify_schematic.py
 
 `kicad-cli sch export svg` 可正常导出，渲染预览见 `outputs/schematic_preview.png`。
 
+## PCB 与 DRC 闭环（进阶项）
+
+板框 140×62mm，26 个元件全部使用 KiCad 8 **官方封装**（DIP-28 / SOIC-16 / HC-49 / 0603 / Micro-USB / 排针等），
+按原理图的 5 个功能分区做 shelf-packing 自动布局，34 个网络逐焊盘绑定（112 处，无遗漏）。
+
+**闭环工作方式** —— 不是"画完线再跑一次 DRC"，而是让 DRC 报告反过来驱动布线：
+
+1. `kicad-cli pcb drc --format json` 把「项目之间的连接缺失」逐条列出，每条都带**两个端点的精确坐标与网络名**；
+2. 双层 0.5mm 网格 A* 在焊盘和已布走线之间找正交通路，其它网络一律视为障碍，必要时自动打过孔换层；
+3. 把新走线写回板子，重跑 DRC，统计未连接项是否下降，直到不再有改善；
+4. 最后一轮铺 F.Cu / B.Cu 两层 GND 铜皮（自动避让其它网络），把地网络一次性连通。
+
+| 阶段 | 设计规则违规 | 未连接项 |
+| --- | --- | --- |
+| 初始（仅布局，无走线） | 0 | 78 |
+| 铺 GND 铜皮后（地网络交由铜皮负责） | 0 | 58 |
+| 自动布线迭代后 | 0 | 22 |
+| 最终 | **0** | **22** |
+
+最终板子含 **221 段走线 / 25 个过孔 / 2 层铜皮**，共 56 条连接由 Agent 自动完成。
+剩余 22 条为待人工或外部布线器补的连接 —— **KiCad 8 没有命令行自动布线器，本机也未装 Freerouting**，
+这是工具链的客观边界；`drc_report.json` 逐条列出了端点与网络，可直接在 pcbnew 里接着布。
+顶层装配视图（隐藏铜皮以便看清元件）见 `outputs/pcb_preview.png`，网页可一键切换预览。
+
 ## 开发进度
 
 - [x] W1 环境搭建（Python / KiCad / LLM 连通性自检）
 - [x] W2 最小 Agent 调通学校 LLM：自然语言 → BOM JSON
 - [x] W3 全链路：自然语言 → BOM + 网表 → **KiCad 8 原理图**
-- [x] 加分项：本地网页界面 + MongoDB 后端（历史 / 多用户 / 缓存 / 多 Agent 共享状态）
-- [ ] 进阶：自动布局布线 / DRC 检查闭环 / 多 Agent 协作 / 仿真评测
+- [x] W4 论文式原理图版面（对称双列 MCU / 5 个功能分区）+ 原理图四项自检
+- [x] 加分项：本地网页界面 + MongoDB 后端（历史 / 多用户 / 缓存 / 多 Agent 共享状态）+ PCB 预览切换
+- [x] 进阶 ①：PCB 自动布局布线（官方封装 / 分区布局 / 双层 A* 走线 / GND 铺铜）
+- [x] 进阶 ②：DRC 检查闭环（DRC 报告反向驱动补线，最终违规 0）
+- [ ] 进阶 ③：多 Agent 协作 / 仿真评测（未做）
 - [ ] W8 交付：设计报告 / 演示视频 / 答辩 PPT
 
 ## 已知限制
 
-- 已完成功能分区自动布局与全正交导线；除两条 LED 支路是**实连导线**外，其余同网络引脚仍靠同名
-  net label 表达电气连接（而非跨区铜线），也未生成 PCB；进阶可做全局自动布线。
+- 原理图侧：已完成功能分区自动布局与全正交导线；除两条 LED 支路是**实连导线**外，其余同网络引脚
+  靠同名 net label 表达电气连接（而非跨区铜线）。
+- PCB 侧：已生成真实封装的板文件并完成双层自动布线，但 34 个网络中仍有 **22 条连接未布通**
+  （KiCad 无 CLI 自动布线器、本机未装 Freerouting）。`drc_report.json` 逐条列出端点与网络，
+  可在 pcbnew 里人工补线。设计规则违规为 0，即已布的线全部合规、无短路、无间距问题。
+- USB1 采用 `USB_Micro-B_Wuerth_614105150721_Vertical`：常见 Molex-105017 封装有 8 个无网络
+  屏蔽焊盘把 1–5 号信号脚围死，自动布线时线引不出来，故换成屏蔽焊盘不挡路的官方封装。
+- 自恢复保险丝 F1 借用 1206 电阻封装占位（两焊盘，电气一致），未使用专用 PTC 封装。
 - 符号映射表有限：电阻 / 电容 / LED / 开关 / 晶振 / MCU(ATmega328P) / CH340G / 连接器等。
 - 为论文式版面额外内嵌 3 个**自包含符号**：`ATmega328P-DIP28`（左右各 14 脚）、
   `Device:R_H`（横放电阻）、`Device:LED_R`（右向导通 LED）。其中 LED_R 采用
@@ -221,7 +283,7 @@ python scripts/verify_schematic.py
 - 原理图内嵌的是**自包含的简化符号副本**：为让 ERC 专注于连接完整性，`power_in` 引脚统一
   归一化为 `passive`（不建模电源驱动链，故无需额外挂 PWR_FLAG）；电源网络的真实连接关系
   由 [A] 网表一致性校验逐节点兜底。此归一化只作用于嵌入副本，不改动本机 KiCad 库。
-- 已通过 `kicad-cli sch erc` 做**原理图级**电气规则校验（0 error）；尚未做 PCB DRC 与仿真评测。
+- 已通过 `kicad-cli sch erc`（原理图 0 error）与 `kicad-cli pcb drc`（PCB 0 违规）；尚未做仿真评测。
 - 引脚级连接的正确性依赖 LLM 输出质量（已加位号自检 + 网表反导出比对兜底）。
 
 ## 学术诚信与 AI 使用声明

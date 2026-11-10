@@ -1,0 +1,517 @@
+{
+    "$schema": "https://schemas.kicad.org/drc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-11-10T17:35:31+0800",
+    "kicad_version": "8.0.9",
+    "schematic_parity": [],
+    "source": "design.kicad_pcb",
+    "unconnected_items": [
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "Y1 的金属化焊盘 1 [XTAL1]",
+                    "pos": {
+                        "x": 100.375,
+                        "y": 10.825
+                    },
+                    "uuid": "b0f6d5f3-5377-4335-8259-71fb936eadb2"
+                },
+                {
+                    "description": "U1 的金属化焊盘 9 [XTAL1]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 29.894999
+                    },
+                    "uuid": "450983b9-cbe5-4185-b595-df199616ba1d"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "Y1 的金属化焊盘 2 [XTAL2]",
+                    "pos": {
+                        "x": 105.255,
+                        "y": 10.825
+                    },
+                    "uuid": "79efaff5-c94d-445a-9aa2-2a608c834a8a"
+                },
+                {
+                    "description": "U1 的金属化焊盘 10 [XTAL2]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 32.434999
+                    },
+                    "uuid": "d44cd815-9cbf-4150-b501-e869afac2feb"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "USB1 的金属化焊盘 3 [USB_D+]",
+                    "pos": {
+                        "x": 12.425,
+                        "y": 10.854999
+                    },
+                    "uuid": "8d583a12-583e-4a7a-87a0-fd9a9c0bc113"
+                },
+                {
+                    "description": "F.Cu 上 U2 的焊盘 5 [USB_D+]",
+                    "pos": {
+                        "x": 45.25,
+                        "y": 14.03
+                    },
+                    "uuid": "9ddcf527-4e67-411e-ad0e-44f076978c63"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "USB1 的金属化焊盘 2 [USB_D-]",
+                    "pos": {
+                        "x": 11.775,
+                        "y": 11.854999
+                    },
+                    "uuid": "b006e2bf-a3a5-4766-be10-4d93e31af403"
+                },
+                {
+                    "description": "F.Cu 上 U2 的焊盘 6 [USB_D-]",
+                    "pos": {
+                        "x": 45.25,
+                        "y": 15.3
+                    },
+                    "uuid": "c4ec16ea-138e-4cce-b430-121749add03d"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "F.Cu 上 U2 的焊盘 4 [CHG_V3]",
+                    "pos": {
+                        "x": 45.25,
+                        "y": 12.76
+                    },
+                    "uuid": "e23310c0-1449-407e-b566-6ae2d6226caf"
+                },
+                {
+                    "description": "F.Cu 上 C8 的焊盘 1 [CHG_V3]",
+                    "pos": {
+                        "x": 50.74,
+                        "y": 22.375
+                    },
+                    "uuid": "2c7f8e05-0c5a-41f5-bc8b-62ba09ede62f"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 2 [UART_TX]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 12.114999
+                    },
+                    "uuid": "764efb11-daa3-44c8-8c02-7e67b960dc6a"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 1 [UART_TX]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 9.824999
+                    },
+                    "uuid": "7b0080a3-6c88-40b3-b34a-179acfa82261"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "F.Cu 上 U2 的焊盘 2 [UART_TX]",
+                    "pos": {
+                        "x": 45.25,
+                        "y": 10.22
+                    },
+                    "uuid": "6a5bef6c-85c1-448f-8455-873c078006d0"
+                },
+                {
+                    "description": "U1 的金属化焊盘 2 [UART_TX]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 12.114999
+                    },
+                    "uuid": "764efb11-daa3-44c8-8c02-7e67b960dc6a"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "走线 [UART_RX] (F.Cu), 长度: 0.6668 mm",
+                    "pos": {
+                        "x": 85.0,
+                        "y": 14.0
+                    },
+                    "uuid": "3258eb7e-3e4a-4d36-b36f-1e367573d801"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 2 [UART_RX]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 12.364999
+                    },
+                    "uuid": "b0559e38-49dd-4f57-bfac-6a2d38eda613"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "F.Cu 上 U2 的焊盘 13 [DTR_RST]",
+                    "pos": {
+                        "x": 50.2,
+                        "y": 12.76
+                    },
+                    "uuid": "43243410-6f3a-4480-b379-043dc25e4f07"
+                },
+                {
+                    "description": "F.Cu 上 C9 的焊盘 1 [DTR_RST]",
+                    "pos": {
+                        "x": 51.41,
+                        "y": 48.755
+                    },
+                    "uuid": "60cb8aef-e43a-46a7-a246-0dba35bc7aaf"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "F.Cu 上 C11 的焊盘 1 [AREF]",
+                    "pos": {
+                        "x": 126.75,
+                        "y": 48.405
+                    },
+                    "uuid": "e68b25e3-4817-45c2-840e-01246868b42a"
+                },
+                {
+                    "description": "H_A 的金属化焊盘 8 [AREF]",
+                    "pos": {
+                        "x": 122.475,
+                        "y": 27.605
+                    },
+                    "uuid": "a5dbe84a-80c3-4cbb-8f26-1f9f61a7e0ec"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "H_A 的金属化焊盘 8 [AREF]",
+                    "pos": {
+                        "x": 122.475,
+                        "y": 27.605
+                    },
+                    "uuid": "a5dbe84a-80c3-4cbb-8f26-1f9f61a7e0ec"
+                },
+                {
+                    "description": "U1 的金属化焊盘 21 [AREF]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 27.354999
+                    },
+                    "uuid": "4ee800fc-2b15-4701-925b-f41d252b2d61"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "走线 [SPI_MOSI] (B.Cu), 长度: 8.6782 mm",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 37.765
+                    },
+                    "uuid": "3936d1ca-2d51-4d7a-a7e3-79d45dfd4799"
+                },
+                {
+                    "description": "U1 的金属化焊盘 17 [SPI_MOSI]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 37.514999
+                    },
+                    "uuid": "70cd1883-25bd-433c-b032-7d953e1f1a75"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "H_D 的金属化焊盘 13 [SPI_MISO]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 40.304999
+                    },
+                    "uuid": "bdcf87af-d793-4af1-b62f-8286c0facc96"
+                },
+                {
+                    "description": "U1 的金属化焊盘 18 [SPI_MISO]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 34.974999
+                    },
+                    "uuid": "98f01768-3372-417c-9008-fe61f88a0306"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 4 [D2]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 17.194999
+                    },
+                    "uuid": "0ccd9c57-681a-46e0-8338-9b7262e71c35"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 3 [D2]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 14.904999
+                    },
+                    "uuid": "d10879b2-028c-46c8-a7eb-e3d9e639846c"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 5 [D3]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 19.734999
+                    },
+                    "uuid": "29a21770-2492-44be-bf80-fb7c9569ef39"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 4 [D3]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 17.444999
+                    },
+                    "uuid": "767dc8a7-b864-4d37-ae36-6e7812db08ff"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 6 [D4]",
+                    "pos": {
+                        "x": 85.125,
+                        "y": 22.274999
+                    },
+                    "uuid": "e0a4b3a0-58cf-4ca3-a360-79d66216a68c"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 5 [D4]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 19.984999
+                    },
+                    "uuid": "0079741d-729c-4dd8-af6b-92a8de65ca9a"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 15 [D9]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 42.594999
+                    },
+                    "uuid": "b3a982e9-a774-4705-8d36-99975c752d51"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 10 [D9]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 32.684999
+                    },
+                    "uuid": "520a601c-49cb-4878-a97d-1e302ba4d06c"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 16 [D10]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 40.054999
+                    },
+                    "uuid": "61c0d84c-96e7-4371-b24f-dba2759fffa4"
+                },
+                {
+                    "description": "H_D 的金属化焊盘 11 [D10]",
+                    "pos": {
+                        "x": 115.825,
+                        "y": 35.224999
+                    },
+                    "uuid": "396456d1-a851-4ddd-a50c-ca5661d449db"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 24 [A1]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 19.734999
+                    },
+                    "uuid": "addb1556-2f91-42c2-9fb6-e28cc71273e8"
+                },
+                {
+                    "description": "H_A 的金属化焊盘 2 [A1]",
+                    "pos": {
+                        "x": 122.475,
+                        "y": 12.365
+                    },
+                    "uuid": "c5d3fbd7-1ad5-484e-a190-05cb3d202917"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 25 [A2]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 17.194999
+                    },
+                    "uuid": "3f3466ef-564f-4a65-8a0e-b39bb68eb9c5"
+                },
+                {
+                    "description": "H_A 的金属化焊盘 3 [A2]",
+                    "pos": {
+                        "x": 122.475,
+                        "y": 14.905
+                    },
+                    "uuid": "6bda327a-1cba-4134-9705-13f87eafd678"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 26 [A3]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 14.654999
+                    },
+                    "uuid": "c655e8fc-e7f6-4955-87ce-e8c0c1c72da4"
+                },
+                {
+                    "description": "H_A 的金属化焊盘 4 [A3]",
+                    "pos": {
+                        "x": 122.475,
+                        "y": 17.445
+                    },
+                    "uuid": "b9d5bfe1-9975-4cce-be38-aec0657e209b"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        },
+        {
+            "description": "项目之间的连接缺失",
+            "items": [
+                {
+                    "description": "U1 的金属化焊盘 27 [A4]",
+                    "pos": {
+                        "x": 92.745,
+                        "y": 12.114999
+                    },
+                    "uuid": "7efd3124-7fa6-459c-ad0e-6ea699dd6934"
+                },
+                {
+                    "description": "H_A 的金属化焊盘 5 [A4]",
+                    "pos": {
+                        "x": 122.475,
+                        "y": 19.985
+                    },
+                    "uuid": "ad5d1722-60f9-4b17-94e5-79130d785b79"
+                }
+            ],
+            "severity": "error",
+            "type": "unconnected_items"
+        }
+    ],
+    "violations": []
+}

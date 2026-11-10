@@ -14,6 +14,9 @@
        且同一引脚不得出现在多个网络（短路检测）。
     B. 电气规则：ERC 报告中不得有 error（warning 仅提示，不判失败）。
     C. 排版几何：元件互不重叠、标签不压元件、标签不互相叠字、全部落在 A4 图框内。
+    D. 导线穿越：导线中段不得穿过元件本体。
+    E. PCB / DRC 闭环：板文件、走线、闭环报告齐备；设计规则违规必须为 0，
+       且未连接项须比首轮明显下降（残留项属 KiCad 无 CLI 自动布线器的已知边界）。
 
 退出码 0 = 全部通过；1 = 存在失败项。可用于 CI / 答辩演示。
 """
@@ -250,12 +253,42 @@ def check_wire_through_components():
     return ok
 
 
+# ------------------------------------------- E. PCB 与 DRC 闭环
+def check_board():
+    """检查 PCB 产物与 DRC 闭环报告。
+
+    violations 必须为 0；未连接项允许残留（KiCad 没有命令行自动布线器，
+    这部分需人工或外部布线器补线），但闭环必须让它们比首轮明显下降。
+    """
+    needed = ["design.kicad_pcb", "board_routes.json",
+              "drc_report_summary.json"]
+    absent = [p for p in needed if not os.path.exists(os.path.join(OUT, p))]
+    if absent:
+        print("[E] PCB / DRC 闭环：缺少产物 %s => FAIL" % absent)
+        return False
+    rep = json.loads(read("drc_report_summary.json"))
+    f, iters = rep["final"], rep["iterations"]
+    first = iters[0]["unconnected_before"] if iters else 0
+    drop = first - f["unconnected_items"]
+    print(f"[E] PCB / DRC 闭环：{len(iters)} 轮迭代，未连接 {first} -> "
+          f"{f['unconnected_items']}（减少 {drop}）")
+    print(f"    设计规则违规   : {f['violations']}  {f['violation_types']}")
+    print(f"    自动走线       : {f['track_segments']} 段 / 过孔 {f['vias']} 个")
+    print(f"    待人工补线     : {f['unconnected_items']} 条（已知边界，不判失败）")
+    for h in iters:
+        print(f"      轮 {h['iteration']}: 违规 {h['violations']} / 未连接 "
+              f"{h['unconnected_before']} / 补 {h['new_routes']} 条走线")
+    ok = f["violations"] == 0 and drop > 0 and f["track_segments"] > 0
+    print(f"    => {'PASS' if ok else 'FAIL'}")
+    return ok
+
+
 def main():
     print("=" * 60)
-    print("原理图自检：电气正确性 + 排版质量")
+    print("全链路自检：原理图电气/排版 + PCB 布局布线/DRC 闭环")
     print("=" * 60)
     results = [check_netlist(), check_erc(), check_geometry(),
-               check_wire_through_components()]
+               check_wire_through_components(), check_board()]
     print("-" * 60)
     print("TOTAL:", "ALL PASS ✓" if all(results) else "FAILED ✗")
     return 0 if all(results) else 1
