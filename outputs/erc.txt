@@ -1,491 +1,419 @@
-ERC 报告 (2026-11-06T19:28:32+0800, UTF8 编码)
+ERC 报告 (2026-11-10T16:23:20+0800, UTF8 编码)
 
 ***** 图纸 /
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(80.0000 mm, 181.8100 mm): 垂直线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(56.0000 mm, 165.0000 mm): 符号 C6 [C]
+    @(166.0000 mm, 174.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(56.0000 mm, 161.1900 mm): 垂直线, 长度 11.0000 mm
+    @(166.0000 mm, 174.1900 mm): Symbol C9 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(56.0000 mm, 161.1900 mm): Symbol C6 引脚 1 [双向, 图线]
+    @(165.2400 mm, 135.4800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(56.0000 mm, 168.8100 mm): 水平线, 长度 35.0000 mm
-[lib_symbol_issues]: 符号 'R' 在库 'Device' 中已被更改
-    ; warning
-    @(80.0000 mm, 178.0000 mm): 符号 R3 [R]
+    @(165.2400 mm, 130.4000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(74.0000 mm, 150.8100 mm): 水平线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'LED' 在库 'Device' 中已被更改
-    ; warning
-    @(63.0000 mm, 178.0000 mm): 符号 D2 [LED]
-[lib_symbol_issues]: 符号 'Crystal' 在库 'Device' 中已被更改
-    ; warning
-    @(68.0000 mm, 165.0000 mm): 符号 Y2 [Crystal]
+    @(165.2400 mm, 132.9400 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(66.8100 mm, 178.0000 mm): 垂直线, 长度 23.0000 mm
+    @(166.0000 mm, 181.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(64.1900 mm, 165.0000 mm): 水平线, 长度 16.0000 mm
+    @(234.9200 mm, 139.9200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(59.1900 mm, 178.0000 mm): 水平线, 长度 8.0000 mm
+    @(234.9200 mm, 142.4600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(59.1900 mm, 178.0000 mm): Symbol D2 引脚 1 [双向, 图线]
+    @(234.9200 mm, 150.0800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(64.1900 mm, 165.0000 mm): Symbol Y2 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(80.0000 mm, 165.0000 mm): 符号 C7 [C]
+    @(234.9200 mm, 147.5400 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(80.0000 mm, 174.1900 mm): Symbol R3 引脚 1 [双向, 图线]
+    @(234.9200 mm, 139.9200 mm): Symbol ICSP1 引脚 1 [Pin_1, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(71.8100 mm, 165.0000 mm): 垂直线, 长度 26.0000 mm
+    @(234.9200 mm, 152.6200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(80.0000 mm, 161.1900 mm): 水平线, 长度 8.0000 mm
+    @(234.9200 mm, 145.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(80.0000 mm, 161.1900 mm): Symbol C7 引脚 1 [双向, 图线]
+    @(165.2400 mm, 125.3200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(80.0000 mm, 168.8100 mm): 水平线, 长度 20.0000 mm
+    @(165.2400 mm, 127.8600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(80.0000 mm, 174.1900 mm): 垂直线, 长度 11.0000 mm
+    @(209.9200 mm, 84.8400 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(63.8400 mm, 122.0000 mm): 水平线, 长度 23.0000 mm
+    @(209.9200 mm, 87.3800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(63.8400 mm, 127.0800 mm): 水平线, 长度 23.0000 mm
-[lib_symbol_issues]: 符号 'Fuse' 在库 'Device' 中已被更改
-    ; warning
-    @(50.0000 mm, 125.0000 mm): 符号 F1 [Fuse]
+    @(209.9200 mm, 79.7600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(71.4600 mm, 106.7600 mm): 垂直线, 长度 18.0000 mm
+    @(209.9200 mm, 82.3000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(63.8400 mm, 119.4600 mm): 水平线, 长度 23.0000 mm
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(74.0000 mm, 97.0000 mm): 符号 C5 [C]
+    @(209.9200 mm, 79.7600 mm): Symbol H_D 引脚 1 [Pin_1, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(74.0000 mm, 93.1900 mm): 水平线, 长度 8.0000 mm
+    @(262.9200 mm, 102.6200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(74.0000 mm, 100.8100 mm): 水平线, 长度 8.0000 mm
+    @(262.9200 mm, 97.5400 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(74.0000 mm, 93.1900 mm): Symbol C5 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'CH340G' 在库 'Interface_USB' 中已被更改
-    ; warning
-    @(74.0000 mm, 122.0000 mm): 符号 U2 [CH340G]
+    @(262.9200 mm, 100.0800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(84.1600 mm, 111.8400 mm): 水平线, 长度 8.0000 mm
+    @(262.9200 mm, 95.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(84.1600 mm, 114.3800 mm): 水平线, 长度 8.0000 mm
+    @(262.9200 mm, 92.4600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(74.0000 mm, 106.7600 mm): 水平线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'LED' 在库 'Device' 中已被更改
-    ; warning
-    @(110.0000 mm, 178.0000 mm): 符号 D1 [LED]
+    @(262.9200 mm, 89.9200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(106.1900 mm, 178.0000 mm): 垂直线, 长度 16.0000 mm
+    @(262.9200 mm, 87.3800 mm): Symbol H_A 引脚 1 [Pin_1, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(113.8100 mm, 178.0000 mm): 垂直线, 长度 8.0000 mm
+    @(262.9200 mm, 87.3800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(106.1900 mm, 178.0000 mm): Symbol D1 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'R' 在库 'Device' 中已被更改
-    ; warning
-    @(130.0000 mm, 178.0000 mm): 符号 R1 [R]
-[lib_symbol_issues]: 符号 'R' 在库 'Device' 中已被更改
-    ; warning
-    @(95.0000 mm, 178.0000 mm): 符号 R2 [R]
+    @(262.9200 mm, 105.1600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(95.0000 mm, 174.1900 mm): Symbol R2 引脚 1 [双向, 图线]
+    @(209.9200 mm, 100.0800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(95.0000 mm, 174.1900 mm): 垂直线, 长度 8.0000 mm
+    @(209.9200 mm, 107.7000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(95.0000 mm, 181.8100 mm): 垂直线, 长度 8.0000 mm
+    @(209.9200 mm, 110.2400 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 102.6200 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 105.1600 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 89.9200 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 92.4600 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 95.0000 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 97.5400 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(209.9200 mm, 112.7800 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(180.0000 mm, 34.6200 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(153.8100 mm, 30.0000 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 82.1400 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 84.6800 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 87.2200 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(180.0000 mm, 27.0000 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(180.0000 mm, 27.0000 mm): Symbol C2 引脚 1 [无源, 图线]
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 74.5200 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 77.0600 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 79.6000 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 122.7800 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 112.6200 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 112.6200 mm): Symbol U1 引脚 1 [~{RESET}/PC6, 双向, 图线]
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 117.7000 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 120.2400 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 102.4600 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 97.3800 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 89.7600 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 92.3000 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 99.9200 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 107.5400 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 110.0800 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(165.2400 mm, 105.0000 mm): 水平线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(210.0000 mm, 34.6200 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(210.0000 mm, 27.0000 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(210.0000 mm, 27.0000 mm): Symbol C3 引脚 1 [无源, 图线]
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(262.0000 mm, 27.0000 mm): Symbol C4 引脚 1 [无源, 图线]
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(262.0000 mm, 27.0000 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(262.0000 mm, 34.6200 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(236.0000 mm, 34.6200 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(236.0000 mm, 27.0000 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(236.0000 mm, 27.0000 mm): Symbol C11 引脚 1 [无源, 图线]
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(96.0000 mm, 153.8100 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(126.0000 mm, 181.8100 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(126.0000 mm, 174.1900 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(126.0000 mm, 174.1900 mm): Symbol R1 引脚 1 [无源, 图线]
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(84.0000 mm, 174.1900 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(151.0800 mm, 178.0000 mm): 水平线, 长度 20.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(140.9200 mm, 178.0000 mm): 垂直线, 长度 8.0000 mm
+[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    ; warning
+    @(140.9200 mm, 178.0000 mm): Symbol SW1 引脚 1 [1, 无源, 图线]
 [lib_symbol_issues]: 符号 'ATmega328P-P' 在库 'MCU_Microchip_ATmega' 中已被更改
     ; warning
-    @(135.0000 mm, 135.0000 mm): 符号 U1 [ATmega328P-P]
-[lib_symbol_issues]: 符号 'Crystal' 在库 'Device' 中已被更改
-    ; warning
-    @(135.0000 mm, 95.0000 mm): 符号 Y1 [Crystal]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(120.0000 mm, 95.0000 mm): 符号 C1 [C]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(120.0000 mm, 91.1900 mm): 垂直线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(119.7600 mm, 104.5200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(120.0000 mm, 91.1900 mm): Symbol C1 引脚 1 [双向, 图线]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(120.0000 mm, 98.8100 mm): 水平线, 长度 40.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(63.8400 mm, 132.1600 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(50.0000 mm, 128.8100 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(84.1600 mm, 129.6200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(74.0000 mm, 137.2400 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(74.0000 mm, 137.2400 mm): Symbol U2 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C_Polarized' 在库 'Device' 中已被更改
-    ; warning
-    @(46.0000 mm, 150.0000 mm): 符号 C10 [C_Polarized]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(46.0000 mm, 153.8100 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(46.0000 mm, 146.1900 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(46.0000 mm, 146.1900 mm): Symbol C10 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(74.0000 mm, 147.0000 mm): 符号 C8 [C]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(74.0000 mm, 143.1900 mm): Symbol C8 引脚 1 [双向, 图线]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(74.0000 mm, 143.1900 mm): 水平线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'Conn_01x05' 在库 'Connector_Generic' 中已被更改
-    ; warning
-    @(50.0000 mm, 100.0000 mm): 符号 USB1 [Conn_01x05]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(44.9200 mm, 97.4600 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(44.9200 mm, 94.9200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(44.9200 mm, 100.0000 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(44.9200 mm, 94.9200 mm): Symbol USB1 引脚 1 [双向, 图线]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(44.9200 mm, 105.0800 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(50.0000 mm, 121.1900 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(50.0000 mm, 121.1900 mm): Symbol F1 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(193.0000 mm, 91.0000 mm): 符号 C11 [C]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(208.0000 mm, 91.0000 mm): 符号 C4 [C]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(193.0000 mm, 94.8100 mm): 水平线, 长度 46.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(208.0000 mm, 94.8100 mm): 水平线, 长度 18.0000 mm
+    @(150.0000 mm, 105.0000 mm): 符号 U1 [ATmega328P-P]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(193.0000 mm, 87.1900 mm): 垂直线, 长度 8.0000 mm
+    @(150.0000 mm, 143.1000 mm): 垂直线, 长度 11.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(208.0000 mm, 87.1900 mm): 水平线, 长度 8.0000 mm
+    @(150.0000 mm, 143.1000 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(193.0000 mm, 87.1900 mm): Symbol C11 引脚 1 [双向, 图线]
+    @(81.8100 mm, 150.0000 mm): 水平线, 长度 18.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(208.0000 mm, 87.1900 mm): Symbol C4 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(178.0000 mm, 91.0000 mm): 符号 C3 [C]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(178.0000 mm, 87.1900 mm): 垂直线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(178.0000 mm, 87.1900 mm): Symbol C3 引脚 1 [双向, 图线]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(178.0000 mm, 94.8100 mm): 水平线, 长度 40.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 140.0800 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 137.5400 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 142.6200 mm): Symbol U1 引脚 1 [双向, 图线]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 142.6200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 147.7000 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 150.2400 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 152.7800 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 155.3200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 157.8600 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(150.2400 mm, 160.4000 mm): 水平线, 长度 8.0000 mm
+    @(96.0000 mm, 146.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 145.1600 mm): 水平线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'Conn_01x06' 在库 'Connector_Generic' 中已被更改
-    ; warning
-    @(215.0000 mm, 174.0000 mm): 符号 ICSP1 [Conn_01x06]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 181.6200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 179.0800 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 176.5400 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 168.9200 mm): Symbol ICSP1 引脚 1 [双向, 图线]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 171.4600 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 174.0000 mm): 水平线, 长度 8.0000 mm
+    @(96.0000 mm, 146.1900 mm): Symbol C7 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 168.9200 mm): 水平线, 长度 8.0000 mm
+    @(105.8100 mm, 178.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 150.2400 mm): 水平线, 长度 8.0000 mm
+    @(98.1900 mm, 178.0000 mm): Symbol D1 引脚 1 [K, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 152.7800 mm): 水平线, 长度 8.0000 mm
+    @(98.1900 mm, 178.0000 mm): 水平线, 长度 18.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 147.7000 mm): 水平线, 长度 8.0000 mm
+    @(30.9200 mm, 34.9200 mm): Symbol USB1 引脚 1 [Pin_1, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 142.6200 mm): 水平线, 长度 8.0000 mm
+    @(36.0000 mm, 72.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 122.3000 mm): 水平线, 长度 8.0000 mm
+    @(36.0000 mm, 79.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 129.9200 mm): 水平线, 长度 8.0000 mm
+    @(36.0000 mm, 72.1900 mm): Symbol F1 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 124.8400 mm): 水平线, 长度 8.0000 mm
+    @(30.9200 mm, 34.9200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 127.3800 mm): 水平线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'Conn_01x08' 在库 'Connector_Generic' 中已被更改
-    ; warning
-    @(250.0000 mm, 135.0000 mm): 符号 H_A [Conn_01x08]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(244.9200 mm, 127.3800 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(244.9200 mm, 129.9200 mm): 水平线, 长度 8.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(244.9200 mm, 132.4600 mm): 水平线, 长度 8.0000 mm
+    @(30.9200 mm, 40.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(244.9200 mm, 135.0000 mm): 水平线, 长度 8.0000 mm
+    @(30.9200 mm, 37.4600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(244.9200 mm, 127.3800 mm): Symbol H_A 引脚 1 [双向, 图线]
+    @(30.9200 mm, 45.0800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(244.9200 mm, 142.6200 mm): 水平线, 长度 8.0000 mm
+    @(152.5400 mm, 66.9000 mm): 垂直线, 长度 11.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(244.9200 mm, 145.1600 mm): 水平线, 长度 8.0000 mm
+    @(80.0000 mm, 37.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(244.9200 mm, 140.0800 mm): 水平线, 长度 8.0000 mm
+    @(80.0000 mm, 30.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(244.9200 mm, 137.5400 mm): 水平线, 长度 8.0000 mm
-[lib_symbol_issues]: 符号 'Conn_01x14' 在库 'Connector_Generic' 中已被更改
-    ; warning
-    @(215.0000 mm, 135.0000 mm): 符号 H_D [Conn_01x14]
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(209.9200 mm, 119.7600 mm): 水平线, 长度 8.0000 mm
+    @(80.0000 mm, 30.1900 mm): Symbol C5 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 132.4600 mm): 水平线, 长度 8.0000 mm
+    @(120.0000 mm, 27.0000 mm): Symbol C1 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 135.0000 mm): 水平线, 长度 8.0000 mm
+    @(120.0000 mm, 27.0000 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 137.5400 mm): 水平线, 长度 8.0000 mm
+    @(120.0000 mm, 34.6200 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 140.0800 mm): 水平线, 长度 8.0000 mm
+    @(90.1600 mm, 72.3800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(209.9200 mm, 119.7600 mm): Symbol H_D 引脚 1 [双向, 图线]
+    @(90.1600 mm, 69.8400 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(138.8100 mm, 95.0000 mm): 水平线, 长度 20.0000 mm
+    @(150.0000 mm, 66.9000 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.0000 mm, 91.1900 mm): 水平线, 长度 8.0000 mm
+    @(134.7600 mm, 74.5200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.0000 mm, 91.1900 mm): Symbol C2 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(150.0000 mm, 95.0000 mm): 符号 C2 [C]
+    @(146.1900 mm, 30.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.0000 mm, 98.8100 mm): 水平线, 长度 18.0000 mm
+    @(146.1900 mm, 30.0000 mm): Symbol Y1 引脚 1 [1, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 112.1400 mm): 水平线, 长度 8.0000 mm
+    @(80.0000 mm, 64.7600 mm): 垂直线, 长度 11.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 104.5200 mm): 水平线, 长度 8.0000 mm
+    @(77.4600 mm, 64.7600 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 107.0600 mm): 水平线, 长度 8.0000 mm
+    @(69.8400 mm, 77.4600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 109.6000 mm): 水平线, 长度 8.0000 mm
+    @(69.8400 mm, 90.1600 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 132.4600 mm): 水平线, 长度 8.0000 mm
+    @(90.1600 mm, 87.6200 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 135.0000 mm): 水平线, 长度 8.0000 mm
+    @(69.8400 mm, 80.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 119.7600 mm): 水平线, 长度 8.0000 mm
+    @(69.8400 mm, 85.0800 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 114.6800 mm): 水平线, 长度 8.0000 mm
+    @(36.0000 mm, 115.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 117.2200 mm): 水平线, 长度 8.0000 mm
+    @(36.0000 mm, 108.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 122.3000 mm): 水平线, 长度 8.0000 mm
+    @(36.0000 mm, 108.1900 mm): Symbol C10 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 127.3800 mm): 水平线, 长度 8.0000 mm
+    @(80.0000 mm, 122.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 129.9200 mm): 水平线, 长度 8.0000 mm
+    @(80.0000 mm, 122.1900 mm): Symbol C8 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(135.0000 mm, 96.9000 mm): 垂直线, 长度 11.0000 mm
-[endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
+    @(80.0000 mm, 129.8100 mm): 垂直线, 长度 8.0000 mm
+[lib_symbol_issues]: 符号 'CH340G' 在库 'Interface_USB' 中已被更改
     ; warning
-    @(137.5400 mm, 96.9000 mm): 垂直线, 长度 14.0000 mm
+    @(80.0000 mm, 80.0000 mm): 符号 U2 [CH340G]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(131.1900 mm, 95.0000 mm): 水平线, 长度 20.0000 mm
+    @(80.0000 mm, 95.2400 mm): Symbol U2 引脚 1 [GND, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(131.1900 mm, 95.0000 mm): Symbol Y1 引脚 1 [双向, 图线]
-[lib_symbol_issues]: 符号 'C' 在库 'Device' 中已被更改
-    ; warning
-    @(160.0000 mm, 178.0000 mm): 符号 C9 [C]
+    @(80.0000 mm, 95.2400 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 162.9400 mm): 水平线, 长度 8.0000 mm
+    @(58.0000 mm, 181.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.2400 mm, 165.4800 mm): 水平线, 长度 8.0000 mm
+    @(58.0000 mm, 174.1900 mm): Symbol R3 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(135.0000 mm, 173.1000 mm): 垂直线, 长度 14.0000 mm
+    @(58.0000 mm, 174.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(130.0000 mm, 174.1900 mm): 垂直线, 长度 20.0000 mm
+    @(84.0000 mm, 181.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(130.0000 mm, 174.1900 mm): Symbol R1 引脚 1 [双向, 图线]
+    @(84.0000 mm, 174.1900 mm): Symbol R2 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(130.0000 mm, 181.8100 mm): 水平线, 长度 40.0000 mm
+    @(60.0000 mm, 153.8100 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
-    ; warning
-    @(135.0000 mm, 173.1000 mm): 垂直线, 长度 18.0000 mm
-[lib_symbol_issues]: 符号 'SW_Push' 在库 'Switch' 中已被更改
     ; warning
-    @(145.0000 mm, 178.0000 mm): 符号 SW1 [SW_Push]
+    @(60.0000 mm, 146.1900 mm): Symbol C6 引脚 1 [无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(160.0000 mm, 174.1900 mm): 水平线, 长度 8.0000 mm
+    @(60.0000 mm, 146.1900 mm): 垂直线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(160.0000 mm, 181.8100 mm): 水平线, 长度 20.0000 mm
+    @(43.8100 mm, 178.0000 mm): 水平线, 长度 18.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(150.0800 mm, 178.0000 mm): 水平线, 长度 18.0000 mm
+    @(36.1900 mm, 178.0000 mm): 水平线, 长度 8.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(139.9200 mm, 178.0000 mm): 垂直线, 长度 16.0000 mm
+    @(36.1900 mm, 178.0000 mm): Symbol D2 引脚 1 [K, 无源, 图线]
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(139.9200 mm, 178.0000 mm): Symbol SW1 引脚 1 [双向, 图线]
+    @(74.1900 mm, 150.0000 mm): 水平线, 长度 18.0000 mm
 [endpoint_off_grid]: 符号引脚或连线没有与栅格对齐
     ; warning
-    @(160.0000 mm, 174.1900 mm): Symbol C9 引脚 1 [双向, 图线]
+    @(74.1900 mm, 150.0000 mm): Symbol Y2 引脚 1 [1, 无源, 图线]
 
- ** ERC 信息: 162 个错误 0 个警告 162
+ ** ERC 信息: 138 个错误 0 个警告 138

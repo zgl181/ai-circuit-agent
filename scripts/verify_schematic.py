@@ -27,14 +27,34 @@ OUT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "outputs"))
 # A4 横向图框：SVG 中边框线约在 11mm 处，右下角为标题栏
 SAFE = (11.0, 286.0, 11.0, 199.0)  # x0, x1, y0, y1
 
-# 各符号半宽/半高(mm)，用于估算元件本体包围盒
-HALF = {
-    "ATmega328P-M": (15, 20), "ATmega328P-P": (16, 32),
-    "CH340G": (6, 10), "Crystal": (4, 4), "C": (4, 3),
-    "C_Polarized": (4, 4), "Fuse": (4, 3), "R": (3, 3), "LED": (3, 3),
-    "SW_Push": (4, 4), "Conn_01x05": (3, 6), "Conn_01x06": (3, 8),
-    "Conn_01x08": (3, 11), "Conn_01x14": (3, 18),
-}
+def symbol_halves(sch):
+    """从原理图内嵌的 lib_symbols 里解析每个符号的**真实**半宽/半高。
+
+    早期版本用硬编码尺寸表（如把 Device:C 估成 4×3mm，实际只有 1×4.81mm），
+    会把"标签紧贴窄电容"误报成压元件。这里直接读符号里的引脚坐标，与生成器同源。"""
+    i = sch.find("(lib_symbols")
+    seg = sch[i:] if i >= 0 else ""
+    halves = {}
+    for m in re.finditer(r'\(symbol "([^"]+)"', seg):
+        name = m.group(1)
+        if re.search(r'_\d+_\d+$', name):      # 嵌套 unit，不是顶层符号
+            continue
+        j, d, k = m.start(), 0, m.start()
+        while k < len(seg):
+            if seg[k] == "(":
+                d += 1
+            elif seg[k] == ")":
+                d -= 1
+                if d == 0:
+                    break
+            k += 1
+        blk = seg[j:k + 1]
+        pts = re.findall(
+            r'\(pin\s+\w+\s+\w+\s+\(at\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\)', blk)
+        if pts:
+            halves[name] = (max(abs(float(a)) for a, _, _ in pts) + 1.0,
+                            max(abs(float(b)) for _, b, _ in pts) + 1.0)
+    return halves
 
 
 def read(path):
@@ -119,12 +139,13 @@ def check_erc():
 # ---------------------------------------------------------------- C. 排版几何
 def check_geometry():
     sch = read("design.kicad_sch")
+    halves = symbol_halves(sch)
     comps = []
     for m in re.finditer(
         r'\(symbol\n\s*\(lib_id "([^"]+)"\)\n\s*\(at ([\d.\-]+) ([\d.\-]+) (\d+)\)', sch
     ):
         lib_id, x, y = m.group(1), float(m.group(2)), float(m.group(3))
-        hx, hy = HALF.get(lib_id.split(":")[-1], (6, 6))
+        hx, hy = halves.get(lib_id, (6.0, 6.0))
         comps.append((lib_id, x - hx, y - hy, x + hx, y + hy))
 
     # 标签包围盒与生成器一致：justify right 时文字向左展开，否则向右展开

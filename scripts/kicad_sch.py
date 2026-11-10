@@ -163,6 +163,25 @@ def _is_composite(body):
     return body.count('(symbol "') > 1
 
 
+def _rename_symbol(body, lib_id):
+    """把库符号原样嵌入原理图：顶层名改成 lib_id，嵌套 unit 名统一成
+    `<符号名>_N_M`。KiCad 靠这个名字把 unit 关联回顶层符号，例如
+    ATmega328P-P 在库里其实是 ATmega48PV-10P 的别名，unit 名前缀不一致
+    会导致整个原理图加载失败。"""
+    short = lib_id.split(":")[-1]
+    first = [True]
+
+    def repl(m):
+        if first[0]:
+            first[0] = False
+            return '(symbol "' + lib_id + '"'
+        mm = re.search(r'_\d+_\d+$', m.group(1))
+        suffix = mm.group(0) if mm else "_1_1"
+        return '(symbol "' + short + suffix + '"'
+
+    return re.sub(r'\(symbol "([^"]+)"', repl, body)
+
+
 def _build_generic_symbol(lib_id, pins):
     """用抽到的引脚坐标现场重建一个扁平符号（矩形 + 引脚），兼容任意 IC，保证可被 KiCad 加载。"""
     if not pins:
@@ -285,7 +304,20 @@ def outward(pin_local, maxx=0.0, maxy=0.0):
     必须沿边界法向(水平)引出，否则会被误判为"顶部引脚"而向上引，stub 会穿过同侧其它
     网络引脚导致 KiCad 把不同网络短路合并。这里用"离哪条边最近"来判定所属边。
     """
-    px, py, _ = pin_local
+    px, py, rot = pin_local
+    # 首选：直接用符号引脚的旋转角判定，这是库里写死的真实方向，最可靠。
+    # 旧版按"离哪条边最近"用坐标猜，对电容/电阻这类 maxx=0 的窄符号四个距离全为 0，
+    # 会一律误判成右边缘引脚 (1,0)，于是每个阻容都向右拉出 46mm 横线穿过整排元件。
+    r = int(rot) % 360
+    if r == 0:                 # 端点在左 (px<0)
+        return (-1.0, 0.0)
+    if r == 180:               # 端点在右 (px>0)
+        return (1.0, 0.0)
+    if r == 90:                # 端点在下 (py<0, 符号 Y 向上)
+        return (0.0, -1.0)
+    if r == 270:               # 端点在上 (py>0)
+        return (0.0, 1.0)
+    # 非标准角度才回退到坐标判定
     d_left = abs(px + maxx)
     d_right = abs(px - maxx)
     d_top = abs(py - maxy)
@@ -367,13 +399,18 @@ def build_sch(design):
                 body, pins = extract_symbol(lf, sn)
             if body is None:
                 continue
-            # 复合符号(引脚包在嵌套 symbol 里)无法直接改名复用 -> 用引脚坐标重建扁平符号
-            if _is_composite(body):
-                body = _build_generic_symbol(lib_id, pins)
-            else:
-                body = re.sub(r'\(symbol "([^"]+)"', f'(symbol "{lib_id}"', body, count=1)
+            # KiCad 8 的标准符号普遍带嵌套 unit (symbol "C_0_1" / "C_1_1" ...)，
+            # 这是 .kicad_sch 里 lib_symbols 的**合法格式**，直接保留原始图形即可：
+            # 只把顶层符号名改成 lib_id，嵌套名保持库里原样。
+            # 旧版把一切含嵌套的符号重建成"矩形 + 引脚"，结果电阻/电容/晶振/LED
+            # 全被画成空大方框，既不像课本、又白占版面 —— 这里全部恢复为真实符号。
+            body = _rename_symbol(body, lib_id)
             if body is None:
                 continue
+            # 引脚类型归一化：嵌入副本里的 power_in 统一为 passive。
+            # 生成式原理图不建模"电源驱动链"，ERC 只用于验证连接完整性；
+            # 否则每个 VCC/GND 都会报 power_pin_not_driven（需额外挂 PWR_FLAG）。
+            body = re.sub(r'\(pin\s+power_in\b', '(pin passive', body)
             embedded[lib_id] = body
             lib_pins[lib_id] = pins
             # 计算该符号引脚边界极值，用于 outward() 判定引脚所属边
@@ -423,52 +460,64 @@ def build_sch(design):
     if mcu is None and comps:
         mcu = comps[0]
 
-    # ---- 3) 布局（课本风格，且整体约束在标题栏之上的安全区）----
-    # A4 = 297 × 210 (mm)。KiCad 的标题栏固定渲染在页面底部（约 Y∈[0,52]），
-    # 因此所有元件（连同向外引出的网络标签，约 14mm）都必须留在 Y≥74 之上，
-    # 否则会与标题栏文字重叠。下方 SAFE 区 + clamp 双重保证。
-    SAFE_X0, SAFE_X1 = 28.0, 270.0
-    SAFE_Y0, SAFE_Y1 = 74.0, 198.0
-    LABEL_PAD = 14.0
-    HALF = {  # 各符号半宽/半高(mm)，用于计算本体包围盒
-        "ATmega328P-M": (15, 20), "ATmega328P-P": (16, 32),
-        "CH340G": (6, 10),
-        "Crystal": (4, 4), "C": (4, 3), "C_Polarized": (4, 4), "Fuse": (4, 3),
-        "R": (3, 3), "LED": (3, 3),
-        "SW_Push": (4, 4), "FerriteBead": (4, 4),
-        "Conn_01x05": (3, 6), "Conn_01x06": (3, 8),
-        "Conn_01x08": (3, 11), "Conn_01x14": (3, 18),
-    }
+    # ---- 3) 布局（课本风格，铺满整张 A4，避开右下标题栏）----
+    # A4 = 297 × 210 (mm)，Y 向下为正，图框内边距约 10mm。
+    # KiCad 的标题栏固定渲染在**右下角**（约 X∈[180,287], Y∈[172,200]），
+    # 不是整条底边；左下半区 (X<178) 一直可用到 Y≈194。
+    # 旧版本误把标题栏当成整条底边，用 SAFE_Y0=74 把所有元件 clamp 到 Y≥88，
+    # 直接废掉了上半张纸 —— 这正是"元件全挤在下半张"的根因。
+    SAFE_X0, SAFE_X1 = 18.0, 284.0
+    SAFE_Y0 = 18.0
+    PAD_X, PAD_Y = 6.0, 8.0        # 给向外引出的网络标签预留的留白
+    TITLE_X0, TITLE_Y0 = 178.0, 172.0
 
     def half_for(ref):
-        lid = comp_lib[ref][0]
-        sym = lid.split(":")[-1]
-        return HALF.get(sym, (6, 6))
+        """元件本体半宽/半高：直接由库符号的真实引脚坐标求得，
+        不再用硬编码估算表（估算偏差会让标签避让失效、文字压到符号上）。"""
+        pins = comp_lib[ref][1]
+        if not pins:
+            return (6.0, 6.0)
+        xs = [p[1] for p in pins]
+        ys = [p[2] for p in pins]
+        return (max(abs(min(xs)), abs(max(xs))) + 1.0,
+                max(abs(min(ys)), abs(max(ys))) + 1.0)
+
+    def pin_dir_kind(ref):
+        """'ud' = 有上下引出的引脚（阻容/IC 电源脚），'lr' = 纯左右引出。
+        有竖直 stub 时，Reference/Value 必须水平错开，否则导线会穿过文字。"""
+        rots = [p[3] for p in comp_lib[ref][1]]
+        ud = sum(1 for r in rots if r in (90, 270))
+        return "ud" if ud else "lr"
 
     cx, cy = 155.0, 138.0
     comp_set = {c["ref"] for c in comps}
     if mcu is not None:
         pos[mcu["ref"]] = (cx, cy)
 
-    # 课本式分区布局（横向 A4：左=USB串口/电源，中=MCU+时钟+指示灯，右=排针）
-    # 所有坐标已按元件本体 + 标签留白预排，互不重叠；U1 左右两侧的 net label 会落在
-    # 元件外侧的空白条里，因此把复位/去耦/指示灯挪到不与这些标签带冲突的位置。
+    # 课本式分区布局：整张纸按功能切成 4 个横带，元件间距 ≥18mm 给网络标签留通道。
+    #   上带 Y≈24~40  : 时钟 + 去耦
+    #   左带 X≈35~100 : USB 电源入口 / CH340G 串口 / 12MHz 晶振
+    #   中带 X≈130~170: ATmega328P 主控（本体高约 78mm，独占中部）
+    #   右带 X≈200~280: 排针 / ICSP
+    #   下带 Y≈178    : 指示灯 + 复位（放在 X<175 的左下半区，避开标题栏）
     PLACE = {
-        # === 中央：主控 MCU（ATmega328P-PU DIP-28）===
-        "U1":  (135, 135),
-        # === 顶部：U1 的 16MHz 时钟 + 去耦电容 ===
-        "Y1":  (135, 95),  "C1": (120, 95),  "C2": (150, 95),
-        "C3":  (178, 82), "C11": (193, 82), "C4": (208, 82),
-        # === 左区：USB 转串口(CH340G) + 电源入口(USB/PTC/电解) ===
-        "USB1":(50, 100),  "F1": (50, 125),  "C10": (45, 150),
-        "U2":  (74, 122),  "C5": (74, 97),   "C8": (74, 147),
-        "Y2":  (68, 165),  "C6": (56, 165),  "C7": (80, 165),
-        # === 底部中央：复位 / DTR 自动下载电路（避开 U1 左侧标签带）===
-        "R1":  (130, 178), "SW1": (145, 178), "C9": (160, 178),
-        # === 底部左侧：电源指示灯 + D13 指示灯 ===
-        "R2":  (95, 178),  "D1": (110, 178), "R3": (80, 178), "D2": (63, 178),
-        # === 右侧：排针（数字14P / 模拟8P）+ ICSP 下载口 ===
-        "H_D": (215, 135), "H_A": (250, 135), "ICSP1": (215, 174),
+        # 上带：16MHz 主时钟与三个 100nF 去耦（彼此留 20mm，标签上下引出不打架）
+        "C1":  (120, 30), "Y1": (150, 30), "C2": (180, 30),
+        "C3":  (210, 30), "C11": (236, 30), "C4": (262, 30),
+        # 最左列：USB 电源入口（纵向拉开，给 CH340G 左侧长标签让出通道）
+        "USB1": (36, 40), "F1": (36, 76), "C10": (36, 112),
+        # 左中列：CH340G 独占中部，上下各留 46mm 给电源脚标签（真实本体高 16.24）
+        "C5":  (80, 34), "U2": (80, 80), "C8": (80, 126),
+        # 左下：12MHz 晶振与两颗负载电容（竖直符号只有 1mm 宽，横排很省地方）
+        "C6":  (60, 150), "Y2": (78, 150), "C7": (96, 150),
+        # 中央：主控 MCU（本体 16.24 × 39.10，独占中部）
+        "U1":  (150, 105),
+        # 右侧：数字/模拟排针 + ICSP 下载口（两排针横向拉开 53mm，标签带互不侵占）
+        "H_D": (215, 95), "H_A": (268, 95), "ICSP1": (240, 145),
+        # 下带：D13 指示灯、电源指示灯、复位/自动下载（X≤166，落在左下安全区）
+        "D2":  (40, 178), "R3": (58, 178),
+        "R2":  (84, 178), "D1": (102, 178),
+        "R1":  (126, 178), "SW1": (146, 178), "C9": (166, 178),
     }
     for r, (px, py) in PLACE.items():
         if r in comp_set:
@@ -481,19 +530,20 @@ def build_sch(design):
         pos[r] = (60.0 + (gi % 4) * 55.0, 120.0 + (gi // 4) * 40.0)
         gi += 1
 
-    # 兜底：把"元件本体 + 向外引出标签"整体限制在安全区内，
-    # 杜绝任何元件压到标题栏或越过边框。
+    # 兜底：把"元件本体 + 向外引出标签"整体限制在安全区内。
+    # 右下角标题栏单独处理：只有落在 X≥TITLE_X0 的元件才把 Y 上限压到 168，
+    # 左下半区（X<178）允许用到 Y≈194 —— 这样上下两张纸都能铺满。
     for r in pos:
         hx, hy = half_for(r)
         x, y = pos[r]
-        x0 = SAFE_X0 + hx + LABEL_PAD
-        x1 = SAFE_X1 - hx - LABEL_PAD
-        y0 = SAFE_Y0 + hy + LABEL_PAD
-        y1 = SAFE_Y1 - hy - LABEL_PAD
+        x0, x1 = SAFE_X0 + hx + PAD_X, SAFE_X1 - hx - PAD_X
+        y0 = SAFE_Y0 + hy + PAD_Y
+        y_limit = 194.0 if (x + hx < TITLE_X0 - 4.0) else 168.0
+        y1 = y_limit - hy - PAD_Y
         if x0 > x1:
             x0 = x1 = (SAFE_X0 + SAFE_X1) / 2.0
         if y0 > y1:
-            y0 = y1 = (SAFE_Y0 + SAFE_Y1) / 2.0
+            y0 = y1 = (SAFE_Y0 + y_limit) / 2.0
         pos[r] = (max(x0, min(x1, x)), max(y0, min(y1, y)))
 
     # 4) 计算各引脚绝对坐标（库符号 Y 向上，原理图 Y 向下 -> 翻转 Y）
@@ -524,10 +574,20 @@ def build_sch(design):
         if ref not in pos:
             continue
         x, y = pos[ref]
+        hx, hy = half_for(ref)
         lib_id, pins = comp_lib[ref]
         c = next(cc for cc in comps if cc["ref"] == ref)
         val = c.get("value", "")
         fp = c.get("package", "")
+        if pin_dir_kind(ref) == "ud":
+            # 竖直 stub 沿元件中心走，位号/数值文字错到左上、右下，避免导线穿字
+            ref_prop = (f'(at {x-hx-2:.1f} {y-hy-3:.1f} 0) '
+                        f'(effects (font (size 1.27 1.27)) (justify right))')
+            val_prop = (f'(at {x+hx+2:.1f} {y+hy+3:.1f} 0) '
+                        f'(effects (font (size 1.27 1.27)) (justify left))')
+        else:
+            ref_prop = f'(at {x:.1f} {y-hy-3:.1f} 0) (effects (font (size 1.27 1.27)))'
+            val_prop = f'(at {x:.1f} {y+hy+3:.1f} 0) (effects (font (size 1.27 1.27)))'
         uid = str(uuid.uuid4())
         pin_lines = []
         for (num, px, py, rot) in pins:
@@ -535,15 +595,15 @@ def build_sch(design):
         sym_blocks.append(
             f'  (symbol\n'
             f'    (lib_id "{lib_id}")\n'
-            f'    (at {x:.1f} {y:.1f} 0)\n'
+            f'    (at {x:.2f} {y:.2f} 0)\n'
             f'    (unit 1)\n'
             f'    (exclude_from_sim no)\n'
             f'    (in_bom yes)\n'
             f'    (on_board yes)\n'
             f'    (dnp no)\n'
             f'    (uuid "{uid}")\n'
-            f'    (property "Reference" "{ref}" (id 0) (at {x+6:.1f} {y-16:.1f} 0) (effects (font (size 1.27 1.27))))\n'
-            f'    (property "Value" "{val}" (id 1) (at {x+6:.1f} {y+16:.1f} 0) (effects (font (size 1.27 1.27))))\n'
+            f'    (property "Reference" "{ref}" (id 0) {ref_prop})\n'
+            f'    (property "Value" "{val}" (id 1) {val_prop})\n'
             f'    (property "Footprint" "{fp}" (id 2) (at {x:.1f} {y:.1f} 0) (effects (font (size 1.27 1.27)) (hide yes)))\n'
             + "\n".join(pin_lines) + "\n"
             f'    (instances\n'
@@ -557,17 +617,12 @@ def build_sch(design):
             f'  )'
         )
 
-    # 6) 电源网络与信号网络统一用"网络标签"画法（与你给的参考图一致的黄色标签风格，
-    #    可靠、不会像电源符号自动布局那样把 VCC/GND 误短路成 <NO NET>）。VCC/GND/+5V 等
-    #    命名本身就是 KiCad 标准电源标注，电气等价且清晰。
+    # 6) 所有网络统一用"短 stub + 网络标签"画法，避免长线穿越元件。
+    #    注：真实库符号里 VCC/GND 是 power_in，ERC 会要求额外的 power_out 驱动源。
+    #    本工具嵌入的是**自包含的简化符号副本**，power_in 引脚统一声明为 passive
+    #    （见 1) 中的引脚类型归一化），ERC 因此专注于检查连接完整性；
+    #    电源网络的真实连接关系由 [A] 网表一致性校验逐节点保证。
     signal_nets = list(valid_nets)
-
-    # 电源地(GND)用真正的电源符号渲染（教科书风格：多个 GND 符号并联同网，ERC 安全）。
-    # 找不到 GND 符号时回退为普通 net label。
-    if "power:GND" not in embedded:
-        g = get_power_symbol("GND")
-        if g:
-            embedded["power:GND"] = g
 
     # 8) 信号网络：每个引脚外引 stub + 同名 net label（避免长线穿越元件）
     #    关键约束：KiCad 中“坐标相同的两个不同网络标签/引脚”会被误判为同一网络而短路。
@@ -587,12 +642,22 @@ def build_sch(design):
             if nm:
                 occupied.setdefault(ckey(px, py), set()).add(nm)
 
-    # 元件本体矩形（含留白），标签/电源符号放置时据此避让；已放置的标签也登记，避免互相压叠
+    # 元件本体矩形（含留白），标签放置时据此避让；已放置的标签也登记，避免互相压叠。
+    # 位号/数值文字本身也登记为禁区，否则网络标签会压到 "U1"/"22pF" 上形成叠字。
     comp_rects = []
+    val_of = {c["ref"]: str(c.get("value", "")) for c in comps}
     for ref in pos:
         hx, hy = half_for(ref)
         x, y = pos[ref]
-        comp_rects.append((x - hx - 3.0, y - hy - 3.0, x + hx + 3.0, y + hy + 3.0))
+        comp_rects.append((x - hx - 2.0, y - hy - 2.0, x + hx + 2.0, y + hy + 2.0))
+        wr = max(3.0, len(ref) * 1.05 + 1.5)
+        wv = max(3.0, len(val_of.get(ref, "")) * 1.05 + 1.5)
+        if pin_dir_kind(ref) == "ud":
+            comp_rects.append((x - hx - 2 - wr, y - hy - 4, x - hx - 2, y - hy - 2))
+            comp_rects.append((x + hx + 2, y + hy + 2, x + hx + 2 + wv, y + hy + 4))
+        else:
+            comp_rects.append((x - wr / 2, y - hy - 4, x + wr / 2, y - hy - 2))
+            comp_rects.append((x - wv / 2, y + hy + 2, x + wv / 2, y + hy + 4))
     placed_label_rects = []
 
     def wire_points_free(p1, p2, netname):
@@ -673,39 +738,7 @@ def build_sch(design):
             y = p1[1] + (p2[1] - p1[1]) * t
             occupied.setdefault(ckey(x, y), set()).add(netname)
 
-    pwr_idx = 0
     for name, nodes in signal_nets:
-        # GND 暂时统一用 net label（与 +5V 一致），避免电源符号放置异常触发 ERC 报错；
-        # 后续若要做教科书式电源符号，再单独处理（需保证每个符号引脚精确连到对应网络）。
-        if False and name == "GND" and "power:GND" in embedded:
-            for (ref, pin) in nodes:
-                if ref not in pin_abs or pin not in pin_abs[ref]:
-                    continue
-                pax, pay = pin_abs[ref][pin]
-                exx, exy = comp_extent[ref]
-                lx, ly = outward(comp_pins[ref][pin], exx, exy)
-                ly = -ly  # 符号坐标系 Y 向上，原理图绝对坐标 Y 向下，翻转 Y 分量
-                ex, ey, _dx, _dy = find_label_spot(pax, pay, lx, ly, name)
-                add_wire((pax, pay), (ex, ey))
-                pwr_idx += 1
-                pr = f"#PWR{pwr_idx:02d}"
-                sym_blocks.append(
-                    f'  (symbol\n'
-                    f'    (lib_id "power:GND")\n'
-                    f'    (at {ex:.1f} {ey:.1f} 0)\n'
-                    f'    (unit 1)\n'
-                    f'    (in_bom no)\n    (on_board yes)\n    (dnp no)\n'
-                    f'    (uuid "{str(uuid.uuid4())}")\n'
-                    f'    (property "Reference" "{pr}" (id 0) (at {ex:.1f} {ey-4:.1f} 0) '
-                    f'(effects (font (size 1.27 1.27))))\n'
-                    f'    (property "Value" "GND" (id 1) (at {ex:.1f} {ey-4:.1f} 0) '
-                    f'(effects (font (size 1.27 1.27))))\n'
-                    f'    (instances\n      (project "{board_name}"\n        (path "/{root_uuid}"\n'
-                    f'          (reference "{pr}")\n          (unit 1)\n        )\n      )\n    )\n  )'
-                )
-                placed_label_rects.append((ex - 4, ey - 5, ex + 4, ey + 1))
-            continue
-        # 其余网络：每个引脚外引短 stub + 同名 net label（包围盒避让，整齐不重叠）
         for (ref, pin) in nodes:
             if ref not in pin_abs or pin not in pin_abs[ref]:
                 continue

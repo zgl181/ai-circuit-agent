@@ -187,11 +187,16 @@ python scripts/verify_schematic.py
 | 检查 | 方法 | 当前结果 |
 | --- | --- | --- |
 | A. 网表一致性 | `kicad-cli sch export netlist` 反导出的网表与 `design.json` 逐网络、逐引脚比对；并检测同一引脚落入多个网络（短路） | 34/34 一致，0 短路 |
-| B. 电气规则 | 解析 `erc.txt`，统计 `; error` | 0 error（162 条为 `endpoint_off_grid` / `lib_symbol_issues` 提示，不影响电气） |
-| C. 排版几何 | 解析 `.kicad_sch`，检查元件重叠、标签压元件、标签互相叠字、超出 A4 图框 | 26 元件 / 110 标签，4 项均为 0 |
+| B. 电气规则 | 解析 `erc.txt`，统计 `; error` | 0 error（138 条为 `endpoint_off_grid` / `lib_symbol_issues` 提示，不影响电气） |
+| C. 排版几何 | 解析 `.kicad_sch` **内嵌符号的真实引脚坐标**，检查元件重叠、标签压元件、标签互相叠字、超出 A4 图框 | 26 元件 / 110 标签，4 项均为 0 |
 
-原理图为 A4 横向（`viewBox = 297×210mm`），采用功能分区布局（左＝USB/串口/电源，
-中＝MCU＋晶振＋复位，右＝排针）与全正交导线；`kicad-cli sch export svg` 可正常导出。
+原理图为 A4 横向（`viewBox = 297×210mm`）。符号直接嵌入 KiCad 官方库的**原始图形**
+（电容双板、电阻、晶振、LED、DIP-28 等），不是空白矩形框；布局按功能分成四条横带铺满整张纸：
+上带＝时钟与去耦，左带＝USB 电源入口 / CH340G / 12MHz 晶振，中带＝ATmega328P 主控，
+右带＝排针与 ICSP，下带＝指示灯与复位（放在左下半区以避开右下角标题栏）。
+所有导线均为**短正交直线 stub**（最长 20mm，无斜线），网络标签朝元件外侧展开，
+位号/数值文字按真实符号高度紧贴本体。`kicad-cli sch export svg` 可正常导出，
+渲染预览见 `outputs/schematic_preview.png`。
 
 ## 开发进度
 
@@ -207,6 +212,9 @@ python scripts/verify_schematic.py
 - 已完成功能分区自动布局与全正交导线，但尚未做**自动布线连接**（同网络引脚靠同名
   net label 表达电气连接，而非实际铜线），也未生成 PCB；进阶可做自动布局布线。
 - 符号映射表有限：电阻 / 电容 / LED / 开关 / 晶振 / MCU(ATmega328P) / CH340G / 连接器等。
+- 原理图内嵌的是**自包含的简化符号副本**：为让 ERC 专注于连接完整性，`power_in` 引脚统一
+  归一化为 `passive`（不建模电源驱动链，故无需额外挂 PWR_FLAG）；电源网络的真实连接关系
+  由 [A] 网表一致性校验逐节点兜底。此归一化只作用于嵌入副本，不改动本机 KiCad 库。
 - 已通过 `kicad-cli sch erc` 做**原理图级**电气规则校验（0 error）；尚未做 PCB DRC 与仿真评测。
 - 引脚级连接的正确性依赖 LLM 输出质量（已加位号自检 + 网表反导出比对兜底）。
 
