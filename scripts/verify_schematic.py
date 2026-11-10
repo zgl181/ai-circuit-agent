@@ -200,11 +200,62 @@ def check_geometry():
     return ok
 
 
+# ------------------------------------------------ D. 导线不穿过元件本体
+def check_wire_through_components():
+    """导线中段不得穿过元件矩形本体。
+
+    早期版本只检查「标签末端」有没有压到元件，却不检查中间那段导线，
+    导致横放 LED 的 GND 导线笔直穿过旁边的竖直电阻，渲染出来像
+    「几个元件被一条线串起来」。两端各跳过 4.5mm（引脚自身位于本体附近）。
+    """
+    sch = read("design.kicad_sch")
+    halves = symbol_halves(sch)
+    boxes = []
+    for m in re.finditer(
+        r'\(symbol\n\s*\(lib_id "([^"]+)"\)\n\s*\(at ([\d.\-]+) ([\d.\-]+) (\d+)\)', sch
+    ):
+        lib_id, x, y = m.group(1), float(m.group(2)), float(m.group(3))
+        hx, hy = halves.get(lib_id, (6.0, 6.0))
+        boxes.append((lib_id, x - hx - 2, y - hy - 2, x + hx + 2, y + hy + 2))
+
+    wires = [
+        (float(a), float(b), float(c), float(d))
+        for a, b, c, d in re.findall(
+            r'\(wire\s+\(pts\s+\(xy ([\d.\-]+) ([\d.\-]+)\)\s+'
+            r'\(xy ([\d.\-]+) ([\d.\-]+)\)', sch)
+    ]
+    bad = []
+    for (ax, ay, bx, by) in wires:
+        dist = ((bx - ax) ** 2 + (by - ay) ** 2) ** 0.5
+        n = max(1, int(dist / 0.5))
+        hit = None
+        for i in range(n + 1):
+            t = i / n
+            if t * dist < 4.5 or (1 - t) * dist < 4.5:
+                continue
+            x, y = ax + (bx - ax) * t, ay + (by - ay) * t
+            for cb in boxes:
+                if cb[1] <= x <= cb[3] and cb[2] <= y <= cb[4]:
+                    hit = cb[0]
+                    break
+            if hit:
+                break
+        if hit:
+            bad.append((f"({ax:.1f},{ay:.1f})->({bx:.1f},{by:.1f})", hit))
+    print(f"[D] 导线穿越元件：{len(wires)} 段导线，穿模 {len(set(b[0] for b in bad))} 段")
+    for it in bad[:8]:
+        print("       ", it)
+    ok = not bad
+    print(f"    => {'PASS' if ok else 'FAIL'}")
+    return ok
+
+
 def main():
     print("=" * 60)
     print("原理图自检：电气正确性 + 排版质量")
     print("=" * 60)
-    results = [check_netlist(), check_erc(), check_geometry()]
+    results = [check_netlist(), check_erc(), check_geometry(),
+               check_wire_through_components()]
     print("-" * 60)
     print("TOTAL:", "ALL PASS ✓" if all(results) else "FAILED ✗")
     return 0 if all(results) else 1

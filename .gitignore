@@ -43,6 +43,7 @@ nul
 outputs/preview/
 outputs/v1_ledblink/
 outputs/*.svg
+outputs/_*
 
 # ===== 个人/外部参考材料，不入公开仓库 =====
 参考资料-华天实训对照.md

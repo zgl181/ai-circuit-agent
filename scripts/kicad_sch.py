@@ -210,6 +210,131 @@ def _build_generic_symbol(lib_id, pins):
     )
 
 
+# ---------------------------------------------------------------------------
+# 论文 / 课本插画风格符号：左右对称的 DIP-28 MCU 与横放电阻
+#
+# KiCad 官方库里的 ATmega328P-P 把 23 个引脚全画在右侧、只有 1 个在左侧，
+# 生成出来的原理图中间是一块"单侧长梳子"，和教材/论文里的芯片框差别很大。
+# 这里按 DIP-28 真实封装重画一个左右各 14 脚的对称符号（自包含嵌入，不动本机库）。
+# ---------------------------------------------------------------------------
+DIP28_PIN_NAMES = {
+    1: "PC6/RESET", 2: "PD0/RXD", 3: "PD1/TXD", 4: "PD2", 5: "PD3", 6: "PD4",
+    7: "VCC", 8: "GND", 9: "PB6/XTAL1", 10: "PB7/XTAL2", 11: "PD5", 12: "PD6",
+    13: "PD7", 14: "PB0", 15: "PB1", 16: "PB2/SS", 17: "PB3/MOSI",
+    18: "PB4/MISO", 19: "PB5/SCK", 20: "AVCC", 21: "AREF", 22: "GND",
+    23: "PC0/ADC0", 24: "PC1/ADC1", 25: "PC2/ADC2", 26: "PC3/ADC3",
+    27: "PC4/ADC4", 28: "PC5/ADC5",
+}
+
+
+def build_dip28_symbol(lib_id="MCU_Microchip_ATmega:ATmega328P-DIP28"):
+    """构造左右各 14 脚的对称 DIP-28 符号，返回 (body, pins)。
+
+    左侧 pin1..14 自上而下，右侧 pin28..15 自上而下（符合 DIP 封装真实脚序）。
+    引脚端点 x=±20.32，rot 分别 0 / 180，outward() 会自动向左 / 向右引出。
+    """
+    left_x, right_x, pin_len = -20.32, 20.32, 2.54
+    y_top = 16.51                       # 14 × 2.54mm 间距，中心对称
+    lines = [
+        f'(symbol "{lib_id}"',
+        '  (pin_names (offset 0.508))',
+        '  (in_bom yes)',
+        '  (on_board yes)',
+        '  (property "Reference" "U" (id 0) (at 0 21.59 0) '
+        '(effects (font (size 1.27 1.27))))',
+        '  (property "Value" "ATmega328P-PU" (id 1) (at 0 -21.59 0) '
+        '(effects (font (size 1.27 1.27))))',
+    ]
+    pins = []
+    for i in range(14):
+        py = y_top - i * 2.54
+        for (num, px, rot) in ((i + 1, left_x, 0), (28 - i, right_x, 180)):
+            nm = DIP28_PIN_NAMES[num]
+            lines.append(
+                f'  (pin passive line (at {px:.2f} {py:.2f} {rot}) (length {pin_len:.2f})\n'
+                f'    (name "{nm}" (effects (font (size 1.0 1.0))))\n'
+                f'    (number "{num}" (effects (font (size 1.0 1.0))))\n'
+                f'  )')
+            pins.append((str(num), float(px), float(py), int(rot)))
+    lines.append(
+        '  (rectangle (start -17.78 -19.05) (end 17.78 19.05) '
+        '(stroke (width 0.254) (type default)) (fill (type background)))')
+    lines.append(')')
+    return "\n".join(lines), pins
+
+
+def build_horizontal_resistor(lib_id="Device:R_H"):
+    """横放电阻：引脚改为左右方向，使 R 与 LED 能在同一水平线上真正串联。
+
+    库里的 Device:R 是竖直符号（引脚上下），与横放的 LED 混排时，
+    LED 的水平 stub 会穿过电阻本体，看起来像"元件被一条线串起来"。
+    """
+    return (
+        f'(symbol "{lib_id}"\n'
+        '  (pin_names (offset 0.254) hide)\n'
+        '  (in_bom yes)\n  (on_board yes)\n'
+        '  (property "Reference" "R" (id 0) (at 0 2.54 0) '
+        '(effects (font (size 1.27 1.27))))\n'
+        '  (property "Value" "R" (id 1) (at 0 -2.54 0) '
+        '(effects (font (size 1.27 1.27))))\n'
+        '  (pin passive line (at -3.81 0 0) (length 1.905)\n'
+        '    (name "~" (effects (font (size 1.27 1.27))))\n'
+        '    (number "1" (effects (font (size 1.27 1.27))))\n  )\n'
+        '  (pin passive line (at 3.81 0 180) (length 1.905)\n'
+        '    (name "~" (effects (font (size 1.27 1.27))))\n'
+        '    (number "2" (effects (font (size 1.27 1.27))))\n  )\n'
+        '  (rectangle (start -1.905 -1.016) (end 1.905 1.016) '
+        '(stroke (width 0.254) (type default)) (fill (type none)))\n'
+        ')'
+    ), [("1", -3.81, 0.0, 0), ("2", 3.81, 0.0, 180)]
+
+
+def build_led_right_symbol(lib_id="Device:LED_R"):
+    """右向导通的 LED（pin1=A 在左、pin2=K 在右），用于「电源→电阻→LED→GND」支路。
+
+    KiCad 官方 Device:LED 是 pin1=K(阴极，左) / pin2=A(阳极，右)，图形朝左导通；
+    而本设计的网表把限流电阻接到 pin1、GND 接到 pin2，用官方符号会是**反偏**。
+    这里镜像官方图形并把引脚语义定为 1=A / 2=K（0603 LED 常见编号习惯），
+    节点号与网表完全不变，只是符号方向与电气含义正确了。
+    """
+    s_stroke = '(stroke (width 0.254) (type default)) (fill (type none))'
+    z_stroke = '(stroke (width 0) (type default)) (fill (type none))'
+    return (
+        f'(symbol "{lib_id}"\n'
+        '  (pin_numbers hide)\n'
+        '  (pin_names (offset 1.016) hide)\n'
+        '  (in_bom yes)\n  (on_board yes)\n'
+        '  (property "Reference" "D" (id 0) (at 0 2.54 0) '
+        '(effects (font (size 1.27 1.27))))\n'
+        '  (property "Value" "LED" (id 1) (at 0 -2.54 0) '
+        '(effects (font (size 1.27 1.27))))\n'
+        # 阴极竖线在右
+        f'  (polyline (pts (xy 1.27 -1.27) (xy 1.27 1.27)) {s_stroke})\n'
+        f'  (polyline (pts (xy -1.27 0) (xy 1.27 0)) {z_stroke})\n'
+        # 二极管三角朝右
+        f'  (polyline (pts (xy -1.27 -1.27) (xy -1.27 1.27) '
+        f'(xy 1.27 0) (xy -1.27 -1.27)) {s_stroke})\n'
+        # 两道发光箭头（镜像到右上）
+        f'  (polyline (pts (xy 3.048 -0.762) (xy 4.572 -2.286) (xy 3.81 -2.286) '
+        f'(xy 4.572 -2.286) (xy 4.572 -1.524)) {z_stroke})\n'
+        f'  (polyline (pts (xy 1.778 -0.762) (xy 3.302 -2.286) (xy 2.54 -2.286) '
+        f'(xy 3.302 -2.286) (xy 3.302 -1.524)) {z_stroke})\n'
+        '  (pin passive line (at -3.81 0 0) (length 2.54)\n'
+        '    (name "A" (effects (font (size 1.27 1.27))))\n'
+        '    (number "1" (effects (font (size 1.27 1.27))))\n  )\n'
+        '  (pin passive line (at 3.81 0 180) (length 2.54)\n'
+        '    (name "K" (effects (font (size 1.27 1.27))))\n'
+        '    (number "2" (effects (font (size 1.27 1.27))))\n  )\n'
+        ')'
+    ), [("1", -3.81, 0.0, 0), ("2", 3.81, 0.0, 180)]
+
+
+# 局部串联网络：这两个网络各只有 2 个节点，且是「限流电阻 → LED」串联。
+# 用一根短导线把两脚实连并在导线上放同名标签，而不是各拉一条 stub，
+# 视觉上才是课本里的 LED 指示电路。
+LOCAL_SERIES_NETS = {"LED_PWR", "LED_D13"}
+
+
 # 预加载电源符号集合（用于判断一个网络名是否可渲染成电源符号）
 def _load_power_symbols():
     p = os.path.join(SYM_DIR, "power.kicad_sym")
@@ -388,7 +513,46 @@ def build_sch(design):
     lib_extent = {}          # lib_id -> (maxx, maxy) 用于判定引脚所属边
     comp_extent = {}         # ref -> (maxx, maxy)
     lib_pins = {}            # lib_id -> [(num,px,py,rot), ...] 供复用符号时取正确引脚
+
+    # 主控 MCU 换成左右对称的 DIP-28；LED 支路的限流电阻换成横放符号，
+    # 这样 R 与 LED 引脚同向、能画成一条干净的串联直线。
+    mcu_ref = next(
+        (c["ref"] for c in comps
+         if any(w in (c.get("type") or "").lower()
+                for w in ["单片机", "mcu", "微控", "microcontroller"])),
+        None)
+    series_res_refs = {
+        n["ref"] for net in nets if net.get("name") in LOCAL_SERIES_NETS
+        for n in net.get("nodes", []) if str(n.get("ref", "")).startswith("R")
+    }
+    series_led_refs = {
+        n["ref"] for net in nets if net.get("name") in LOCAL_SERIES_NETS
+        for n in net.get("nodes", []) if str(n.get("ref", "")).startswith("D")
+    }
+
     for c in comps:
+        ref = c["ref"]
+        custom = None
+        if ref == mcu_ref:
+            custom = ("MCU_Microchip_ATmega:ATmega328P-DIP28", build_dip28_symbol)
+        elif ref in series_res_refs:
+            custom = ("Device:R_H", build_horizontal_resistor)
+        elif ref in series_led_refs:
+            custom = ("Device:LED_R", build_led_right_symbol)
+        if custom is not None:
+            lib_id, builder = custom
+            if lib_id not in embedded:
+                body, pins = builder(lib_id)
+                embedded[lib_id] = body
+                lib_pins[lib_id] = pins
+                lib_extent[lib_id] = (max(abs(p[1]) for p in pins),
+                                      max(abs(p[2]) for p in pins))
+            pins = lib_pins[lib_id]
+            comp_lib[ref] = (lib_id, pins)
+            comp_pins[ref] = {num: (px, py, rot) for (num, px, py, rot) in pins}
+            comp_extent[ref] = lib_extent[lib_id]
+            continue
+
         lf, sn = resolve_lib(c, ref_maxpin.get(c["ref"], 2))
         lib_id = f"{lf[:-10]}:{sn}"
         if lib_id not in embedded:
@@ -466,9 +630,9 @@ def build_sch(design):
     # 不是整条底边；左下半区 (X<178) 一直可用到 Y≈194。
     # 旧版本误把标题栏当成整条底边，用 SAFE_Y0=74 把所有元件 clamp 到 Y≥88，
     # 直接废掉了上半张纸 —— 这正是"元件全挤在下半张"的根因。
-    SAFE_X0, SAFE_X1 = 18.0, 284.0
+    SAFE_X0, SAFE_X1 = 18.0, 290.0
     SAFE_Y0 = 18.0
-    PAD_X, PAD_Y = 6.0, 8.0        # 给向外引出的网络标签预留的留白
+    PAD_X, PAD_Y = 6.0, 4.0        # 给向外引出的网络标签预留的留白
     TITLE_X0, TITLE_Y0 = 178.0, 172.0
 
     def half_for(ref):
@@ -494,31 +658,46 @@ def build_sch(design):
     if mcu is not None:
         pos[mcu["ref"]] = (cx, cy)
 
-    # 课本式分区布局：整张纸按功能切成 4 个横带，元件间距 ≥18mm 给网络标签留通道。
-    #   上带 Y≈24~40  : 时钟 + 去耦
-    #   左带 X≈35~100 : USB 电源入口 / CH340G 串口 / 12MHz 晶振
-    #   中带 X≈130~170: ATmega328P 主控（本体高约 78mm，独占中部）
-    #   右带 X≈200~280: 排针 / ICSP
-    #   下带 Y≈178    : 指示灯 + 复位（放在 X<175 的左下半区，避开标题栏）
+    # 论文式分区布局：整张纸切成 5 个带虚线框 + 标题的功能区，元件只在自己的
+    # 框内排布、按支路方向对齐，读图人一眼就能定位，不必全屏搜索。
+    #
+    #   ┌──①POWER──┬────②USB-UART────┬──────③MCU CORE──────┬───④I/O───┐
+    #   │ USB/F1/C10│ CH340G + 12MHz  │ 16MHz 时钟          │ 去耦      │
+    #   │           │                │ 左右对称 DIP-28 主控 │ 排针/ICSP │
+    #   ├───────────┴────────────────┴──────────────────────┴───────────┤
+    #   │ ⑤ STATUS LEDs / RESET                            │ 标题栏    │
+    #   └───────────────────────────────────────────────────┴───────────┘
+    #
+    # 关键：串联支路的元件必须"引脚同向"排成一条直线（R 用横放符号、LED 也是横放），
+    # 旧版把竖直电阻和水平 LED 混排在同一行，水平导线会穿过电阻本体，
+    # 看起来就像"几个元件被一条线串起来"。
     PLACE = {
-        # 上带：16MHz 主时钟与三个 100nF 去耦（彼此留 20mm，标签上下引出不打架）
-        "C1":  (120, 30), "Y1": (150, 30), "C2": (180, 30),
-        "C3":  (210, 30), "C11": (236, 30), "C4": (262, 30),
-        # 最左列：USB 电源入口（纵向拉开，给 CH340G 左侧长标签让出通道）
-        "USB1": (36, 40), "F1": (36, 76), "C10": (36, 112),
-        # 左中列：CH340G 独占中部，上下各留 46mm 给电源脚标签（真实本体高 16.24）
-        "C5":  (80, 34), "U2": (80, 80), "C8": (80, 126),
-        # 左下：12MHz 晶振与两颗负载电容（竖直符号只有 1mm 宽，横排很省地方）
-        "C6":  (60, 150), "Y2": (78, 150), "C7": (96, 150),
-        # 中央：主控 MCU（本体 16.24 × 39.10，独占中部）
-        "U1":  (150, 105),
-        # 右侧：数字/模拟排针 + ICSP 下载口（两排针横向拉开 53mm，标签带互不侵占）
-        "H_D": (215, 95), "H_A": (268, 95), "ICSP1": (240, 145),
-        # 下带：D13 指示灯、电源指示灯、复位/自动下载（X≤166，落在左下安全区）
-        "D2":  (40, 178), "R3": (58, 178),
-        "R2":  (84, 178), "D1": (102, 178),
-        "R1":  (126, 178), "SW1": (146, 178), "C9": (166, 178),
+        # ① 电源入口：竖直一列（+5V 在上、GND 在下）
+        "USB1": (40, 44), "F1": (40, 78), "C10": (40, 110),
+        # ② USB 转串口：CH340G 居中，去耦在上/右，12MHz 晶振与负载电容在下排
+        "C5":  (108, 32), "U2": (84, 76), "C8": (108, 112),
+        "C6":  (66, 132), "Y2": (86, 132), "C7": (106, 132),
+        # ③ 主控：16MHz 时钟在正上方，对称双列 DIP-28 居中（左右标签带各留 ~22mm）
+        "C1":  (145, 48), "Y1": (173, 48), "C2": (201, 48),
+        "U1":  (173, 100),
+        # ④ 去耦 + 扩展接口：三颗 100nF 在上排，排针/ICSP 在下排
+        "C3":  (230, 46), "C11": (252, 46), "C4": (274, 46),
+        "H_D": (241, 82), "H_A": (276, 74), "ICSP1": (258, 122),
+        # ⑤ 状态指示（水平串联，R→LED 一条直线，两支路拉开 22mm 给中间网络标签）
+        "R3":  (36, 162), "D2": (66, 162),
+        "R2":  (106, 162), "D1": (136, 162),
+        # 复位 / 自动下载放第二行，与 LED 支路错开，避免文字与标签叠压
+        "R1":  (60, 182), "SW1": (110, 182), "C9": (150, 182),
     }
+
+    # 功能分区虚线框（纯图形，不参与电气连接 / ERC）
+    ZONES = [
+        (14, 24, 46, 146, "1 POWER INPUT"),
+        (50, 24, 126, 146, "2 USB-UART  CH340G"),
+        (130, 24, 216, 140, "3 MCU CORE  ATmega328P-PU"),
+        (220, 24, 285, 146, "4 DECOUPLING / I-O HEADERS"),
+        (14, 150, 172, 196, "5 STATUS LED / RESET"),
+    ]
     for r, (px, py) in PLACE.items():
         if r in comp_set:
             pos[r] = (px, py)
@@ -538,7 +717,7 @@ def build_sch(design):
         x, y = pos[r]
         x0, x1 = SAFE_X0 + hx + PAD_X, SAFE_X1 - hx - PAD_X
         y0 = SAFE_Y0 + hy + PAD_Y
-        y_limit = 194.0 if (x + hx < TITLE_X0 - 4.0) else 168.0
+        y_limit = 198.0 if (x + hx < TITLE_X0 - 4.0) else 168.0
         y1 = y_limit - hy - PAD_Y
         if x0 > x1:
             x0 = x1 = (SAFE_X0 + SAFE_X1) / 2.0
@@ -560,6 +739,19 @@ def build_sch(design):
 
     sym_blocks = []
     wire_blocks = []
+    graphic_blocks = []
+
+    # 论文插画风的功能分区：灰色虚线框 + 加粗小标题。
+    # 这些是纯图形对象，不产生引脚 / 网络，ERC 与网表都不受影响。
+    for (x0, y0, x1, y1, title) in ZONES:
+        graphic_blocks.append(
+            f'  (rectangle (start {x0:.2f} {y0:.2f}) (end {x1:.2f} {y1:.2f}) '
+            f'(stroke (width 0.18) (type dash)) (fill (type none)) '
+            f'(uuid "{str(uuid.uuid4())}"))')
+        graphic_blocks.append(
+            f'  (text "{title}" (exclude_from_sim no) (at {x0+2:.2f} {y0+3.8:.2f} 0) '
+            f'(effects (font (size 1.5 1.5) (bold yes)) (justify left)) '
+            f'(uuid "{str(uuid.uuid4())}"))')
 
     def add_wire(p, q):
         if abs(p[0] - q[0]) < 0.01 and abs(p[1] - q[1]) < 0.01:
@@ -642,14 +834,26 @@ def build_sch(design):
             if nm:
                 occupied.setdefault(ckey(px, py), set()).add(nm)
 
+    # 引脚端点按 1mm 网格建索引，供导线做「线段级」精确冲突检测。
+    # 旧版按 1mm 步长采样 + 0.1mm 格点键，会漏掉落在两次采样之间的引脚，
+    # 于是两根不同网络的竖直 stub 互相穿过、被 KiCad 合并成一个网络。
+    pin_grid = {}
+    for (r, p), nm in net_of_pin.items():
+        if r in pin_abs and p in pin_abs[r]:
+            qx, qy = pin_abs[r][p]
+            pin_grid.setdefault((int(round(qx)), int(round(qy))), []).append((qx, qy, nm))
+
     # 元件本体矩形（含留白），标签放置时据此避让；已放置的标签也登记，避免互相压叠。
     # 位号/数值文字本身也登记为禁区，否则网络标签会压到 "U1"/"22pF" 上形成叠字。
     comp_rects = []
+    comp_boxes = []          # (rect, ref) 本体框：用于检查「导线穿过别的元件」
     val_of = {c["ref"]: str(c.get("value", "")) for c in comps}
     for ref in pos:
         hx, hy = half_for(ref)
         x, y = pos[ref]
-        comp_rects.append((x - hx - 2.0, y - hy - 2.0, x + hx + 2.0, y + hy + 2.0))
+        body = (x - hx - 2.0, y - hy - 2.0, x + hx + 2.0, y + hy + 2.0)
+        comp_rects.append(body)
+        comp_boxes.append((body, ref))
         wr = max(3.0, len(ref) * 1.05 + 1.5)
         wv = max(3.0, len(val_of.get(ref, "")) * 1.05 + 1.5)
         if pin_dir_kind(ref) == "ud":
@@ -661,19 +865,56 @@ def build_sch(design):
     placed_label_rects = []
 
     def wire_points_free(p1, p2, netname):
-        """W4 已验证的电气保护：沿整条候选导线按 1mm 采样，
-        任何一点若被其它网络的引脚/导线占用就放弃，避免 KiCad 合并网络。"""
-        n = max(1, int(((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5 / 1.0))
+        """线段级电气保护：沿候选导线按 0.4mm 采样，任何一点若贴近其它网络的
+        引脚端点或已放置导线就放弃，避免 KiCad 把两个网络合并（短路）。"""
+        dist = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
+        n = max(1, int(dist / 0.4))
         for i in range(n + 1):
             t = i / n
             x, y = p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t
-            if any(nm != netname for nm in occupied.get(ckey(x, y), set())):
-                return False
+            # 起点附近属于自身引脚，跳过
+            if i and t * dist < 1.2:
+                continue
+            for gx in (int(round(x)) - 1, int(round(x)), int(round(x)) + 1):
+                for gy in (int(round(y)) - 1, int(round(y)), int(round(y)) + 1):
+                    for (qx, qy, qnm) in pin_grid.get((gx, gy), ()):
+                        if qnm != netname and abs(x - qx) < 0.7 and abs(y - qy) < 0.7:
+                            return False
+            kx, ky = ckey(x, y)
+            for ax in (-0.1, 0.0, 0.1):
+                for ay in (-0.1, 0.0, 0.1):
+                    if any(nm != netname for nm in
+                           occupied.get((round(kx + ax, 1), round(ky + ay, 1)), set())):
+                        return False
         return True
 
-    def spot_ok(pax, pay, ex, ey, lx, ly, netname):
+    def wire_hits_comp(p1, p2, own_ref):
+        """候选 stub 不得穿过其它元件本体。
+
+        旧版只检查「标签末端」有没有压到元件，却不管中间那段导线：
+        于是横放 LED 的 GND 导线会笔直穿过旁边竖直电阻的矩形本体，
+        渲染出来就像几个元件被一条线串起来（用户截图里的现象）。
+        起点附近 4.5mm 属于自身引脚，跳过不算穿越。
+        """
+        dist = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
+        n = max(1, int(dist))
+        for i in range(n + 1):
+            t = i / n
+            if t * dist < 4.5:
+                continue
+            x = p1[0] + (p2[0] - p1[0]) * t
+            y = p1[1] + (p2[1] - p1[1]) * t
+            for (r, ref) in comp_boxes:
+                if ref == own_ref:
+                    continue
+                if r[0] <= x <= r[2] and r[1] <= y <= r[3]:
+                    return True
+        return False
+
+    def spot_ok(pax, pay, ex, ey, lx, ly, netname, ref):
         return (not box_hit(ex, ey, netname, lx, ly)
-                and wire_points_free((pax, pay), (ex, ey), netname))
+                and wire_points_free((pax, pay), (ex, ey), netname)
+                and not wire_hits_comp((pax, pay), (ex, ey), ref))
 
     def label_w(name):
         return max(6.0, len(name) * 1.1 + 2.0)
@@ -704,14 +945,14 @@ def build_sch(design):
                 return True
         return False
 
-    def find_label_spot(pax, pay, lx, ly, netname):
+    def find_label_spot(pax, pay, lx, ly, netname, ref):
         """返回 (ex, ey, lx, ly)：沿引脚外法向拉一条纯水平/垂直的直线 stub，
         末端放标签。导线全程正交、不折线、不斜移（教科书式原理图的关键）。
         标签盒收紧到 2.2mm（小于 2.54mm 引脚间距），同侧相邻引脚各占自己的通道；
         冲突时只增大外推距离，同一网络的标签自然排成整齐的一列。"""
         for d in (8.0, 9.5, 11.0, 12.5, 14.0, 16.0, 18.0, 20.0, 23.0, 26.0, 30.0, 35.0, 40.0, 46.0):
             ex, ey = pax + lx * d, pay + ly * d
-            if spot_ok(pax, pay, ex, ey, lx, ly, netname):
+            if spot_ok(pax, pay, ex, ey, lx, ly, netname, ref):
                 return ex, ey, lx, ly
         # 外法向被堵死：改用两个正交切向就近找空位（仍是全正交直线 stub），
         # 绝不硬推 46mm 长线穿过其它元件。
@@ -719,12 +960,12 @@ def build_sch(design):
         for (ax, ay) in alts:
             for d in (8.0, 9.5, 11.0, 12.5, 14.0, 16.0, 18.0, 20.0, 23.0, 26.0):
                 ex, ey = pax + ax * d, pay + ay * d
-                if spot_ok(pax, pay, ex, ey, ax, ay, netname):
+                if spot_ok(pax, pay, ex, ey, ax, ay, netname, ref):
                     return ex, ey, ax, ay
         # 实在无处可放：退到最近的空位（沿首选方向，仍做一次避让尝试）
         for d in (46.0, 52.0, 58.0):
             ex, ey = pax + lx * d, pay + ly * d
-            if spot_ok(pax, pay, ex, ey, lx, ly, netname):
+            if spot_ok(pax, pay, ex, ey, lx, ly, netname, ref):
                 return ex, ey, lx, ly
         return pax + lx * 46.0, pay + ly * 46.0, lx, ly
 
@@ -739,6 +980,37 @@ def build_sch(design):
             occupied.setdefault(ckey(x, y), set()).add(netname)
 
     for name, nodes in signal_nets:
+        # 局部串联支路（限流电阻 → LED）：两脚之间画一根真正的短导线，
+        # 并在导线上放同名网络标签来保住网络名。两端引脚仍由通用 stub+label
+        # 处理（分别属于 D13/+5V 与 GND），因此不会重复布线。
+        # 这样渲染出来是课本里的「R ─ LED」串联，而不是一条线穿过元件本体。
+        if name in LOCAL_SERIES_NETS and len(nodes) == 2:
+            r_node = next(
+                ((r, p) for (r, p) in nodes
+                 if comp_lib.get(r, ("",))[0] == "Device:R_H" and p == "2"), None)
+            d_node = next(
+                ((r, p) for (r, p) in nodes
+                 if comp_lib.get(r, ("",))[0] == "Device:LED_R" and p == "1"), None)
+            if (r_node and d_node
+                    and r_node[0] in pin_abs and d_node[0] in pin_abs):
+                pa = pin_abs[r_node[0]]["2"]
+                pb = pin_abs[d_node[0]]["1"]
+                if abs(pa[1] - pb[1]) < 0.01 and pb[0] > pa[0]:
+                    add_wire(pa, pb)
+                    mark_wire(pa, pb, name)
+                    ex = pa[0] + 4.0
+                    for off in (4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0):
+                        ex = pa[0] + off
+                        if not box_hit(ex, pa[1], name, 1.0, 0.0):
+                            break
+                    lu = str(uuid.uuid4())
+                    wire_blocks.append(
+                        f'  (label "{name}" (at {ex:.2f} {pa[1]:.2f} 0) '
+                        f'(effects (font (size 1.27 1.27))) (uuid "{lu}"))')
+                    occupied.setdefault(ckey(ex, pa[1]), set()).add(name)
+                    placed_label_rects.append(label_rect(ex, pa[1], name, 1.0, 0.0))
+                    continue
+
         for (ref, pin) in nodes:
             if ref not in pin_abs or pin not in pin_abs[ref]:
                 continue
@@ -746,7 +1018,7 @@ def build_sch(design):
             exx, exy = comp_extent[ref]
             lx, ly = outward(comp_pins[ref][pin], exx, exy)
             ly = -ly  # 符号坐标系 Y 向上，原理图绝对坐标 Y 向下，翻转 Y 分量
-            ex, ey, dx, dy = find_label_spot(pax, pay, lx, ly, name)
+            ex, ey, dx, dy = find_label_spot(pax, pay, lx, ly, name, ref)
             add_wire((pax, pay), (ex, ey))
             mark_wire((pax, pay), (ex, ey), name)
             lu = str(uuid.uuid4())
@@ -791,6 +1063,8 @@ def build_sch(design):
   (lib_symbols
 {lib_symbols_block}
   )
+
+{chr(10).join(graphic_blocks)}
 
 {chr(10).join(sym_blocks)}
 
