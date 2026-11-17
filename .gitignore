@@ -30,6 +30,9 @@ parts/
 .workbuddy/
 .slidep/
 
+# ===== 文档生成流水线中间产物（正式交付见根目录 .docx）=====
+output/
+
 # ===== 编辑器/系统文件 =====
 .DS_Store
 Thumbs.db
