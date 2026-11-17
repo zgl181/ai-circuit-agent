@@ -5,7 +5,7 @@
       "violations": 0,
       "unconnected_before": 58,
       "routes_total": 0,
-      "seconds": 16.29,
+      "seconds": 47.24,
       "new_routes": 61,
       "failed_edges": 22
     },
@@ -14,7 +14,7 @@
       "violations": 0,
       "unconnected_before": 22,
       "routes_total": 61,
-      "seconds": 15.49,
+      "seconds": 15.42,
       "new_routes": 0,
       "failed_edges": 22
     }
@@ -25,7 +25,7 @@
     "unconnected_items": 22,
     "schematic_parity": 0,
     "routes": 61,
-    "track_segments": 221,
+    "track_segments": 223,
     "vias": 25
   },
   "board_mm": [

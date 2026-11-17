@@ -17,6 +17,9 @@
     D. 导线穿越：导线中段不得穿过元件本体。
     E. PCB / DRC 闭环：板文件、走线、闭环报告齐备；设计规则违规必须为 0，
        且未连接项须比首轮明显下降（残留项属 KiCad 无 CLI 自动布线器的已知边界）。
+    F. 电源语义：A–E 只验「生成结果与设计 JSON 是否一致」，不验电路逻辑本身。
+       本项检查设计数据里的供电语义：保护/限流器件不得跨接电源与地，
+       保险丝必须串联在两个不同的电源网络之间（本次 F1 短路即由此项捕获）。
 
 退出码 0 = 全部通过；1 = 存在失败项。可用于 CI / 答辩演示。
 """
@@ -283,12 +286,81 @@ def check_board():
     return ok
 
 
+# ------------------------------------------- F. 电源语义（设计数据层）
+POWER_HINTS = {"+5V", "+3V3", "VCC", "VDD", "VIN", "VBUS", "USB_VBUS"}
+GND_HINTS = {"GND", "VSS", "AGND", "DGND", "PGND"}
+
+
+def _is_power(name):
+    u = name.upper()
+    return u in POWER_HINTS or u.startswith("+") or "VBUS" in u or "VCC" in u
+
+
+def _is_gnd(name):
+    return name.upper() in GND_HINTS
+
+
+def check_power_semantics():
+    """校验设计 JSON 的供电逻辑，而不是校验「生成文件是否照抄了它」。
+
+    LLM 生成网表时可能把保护器件接成电源到地的跨接（F1.1=+5V / F1.2=GND），
+    这种错误网表一致性、ERC、几何检查和 PCB DRC 都不会报：它们只关心
+    「写进去的和画出来的一样」。本项直接对设计意图做规则判断。
+    """
+    design = json.loads(read("design.json"))
+    nets = {n["name"]: {(p["ref"], str(p["pin"])) for p in n["nodes"]}
+            for n in design["nets"]}
+    pin_net = {}
+    for name, nodes in nets.items():
+        for ref_pin in nodes:
+            pin_net[ref_pin] = name
+
+    checked, fuses, bad = 0, [], []
+    for comp in design["components"]:
+        ref = comp["ref"]
+        typ = str(comp.get("type", ""))
+        blob = (typ + str(comp.get("value", "")) + str(comp.get("note", ""))).lower()
+        is_fuse = ("保险" in typ or "fuse" in blob or "ptc" in blob)
+        is_res = ("电阻" in typ or "resistor" in blob)
+        if not (is_fuse or is_res):
+            continue
+        checked += 1
+        attached = sorted({nm for (r, _), nm in pin_net.items() if r == ref})
+        has_pwr = any(_is_power(n) for n in attached)
+        has_gnd = any(_is_gnd(n) for n in attached)
+        if has_pwr and has_gnd:
+            bad.append(f"{ref} 跨接电源与地（{', '.join(attached)}）")
+        if is_fuse:
+            fuses.append((ref, attached))
+            if len(attached) != 2 or has_gnd or not has_pwr:
+                bad.append(f"{ref} 保险丝未串联在两个电源网络之间"
+                           f"（{', '.join(attached) or '无网络'}）")
+
+    print(f"[F] 电源语义：{len(design['components'])} 元件 / {len(nets)} 网络，"
+          f"保护与限流器件 {checked} 个")
+    for ref, attached in fuses:
+        state = "串联正确" if (len(attached) == 2
+                              and not any(_is_gnd(n) for n in attached)
+                              and any(_is_power(n) for n in attached)) else "接法异常"
+        print(f"    {ref} 保险丝       : {' -> '.join(attached)}（{state}）")
+    print(f"    电源-地异常跨接 : {len(bad)}")
+    for b in bad[:8]:
+        print("       ", b)
+    # 保险丝是可选件：设计里没有时只提示，不判失败
+    if not fuses:
+        print("    未发现保险丝（可选件，跳过串联检查）")
+    ok = not bad
+    print(f"    => {'PASS' if ok else 'FAIL'}")
+    return ok
+
+
 def main():
     print("=" * 60)
-    print("全链路自检：原理图电气/排版 + PCB 布局布线/DRC 闭环")
+    print("全链路自检：原理图电气/排版 + PCB 布局布线/DRC 闭环 + 电源语义")
     print("=" * 60)
     results = [check_netlist(), check_erc(), check_geometry(),
-               check_wire_through_components(), check_board()]
+               check_wire_through_components(), check_board(),
+               check_power_semantics()]
     print("-" * 60)
     print("TOTAL:", "ALL PASS ✓" if all(results) else "FAILED ✗")
     return 0 if all(results) else 1

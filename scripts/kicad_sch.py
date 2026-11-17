@@ -996,19 +996,28 @@ def build_sch(design):
                 pa = pin_abs[r_node[0]]["2"]
                 pb = pin_abs[d_node[0]]["1"]
                 if abs(pa[1] - pb[1]) < 0.01 and pb[0] > pa[0]:
-                    add_wire(pa, pb)
-                    mark_wire(pa, pb, name)
+                    # 标签原先与导线同 y，文字基线正好落在导线上，渲染出来是
+                    # 「绿线穿过绿字」。改为把标签抬到导线上方 1.8mm，并把水平
+                    # 导线在分支点拆成两段，让竖线与两段线共用同一个端点，
+                    # KiCad 才会把它算作真正的电气连接（而不是线中段 T 接）。
+                    lift = 1.8
+                    ly = pa[1] - lift
                     ex = pa[0] + 4.0
                     for off in (4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0):
                         ex = pa[0] + off
-                        if not box_hit(ex, pa[1], name, 1.0, 0.0):
+                        if not box_hit(ex, ly, name, 1.0, 0.0):
                             break
+                    add_wire(pa, (ex, pa[1]))
+                    add_wire((ex, pa[1]), pb)
+                    add_wire((ex, pa[1]), (ex, ly))
+                    mark_wire(pa, pb, name)
+                    mark_wire((ex, pa[1]), (ex, ly), name)
                     lu = str(uuid.uuid4())
                     wire_blocks.append(
-                        f'  (label "{name}" (at {ex:.2f} {pa[1]:.2f} 0) '
+                        f'  (label "{name}" (at {ex:.2f} {ly:.2f} 0) '
                         f'(effects (font (size 1.27 1.27))) (uuid "{lu}"))')
-                    occupied.setdefault(ckey(ex, pa[1]), set()).add(name)
-                    placed_label_rects.append(label_rect(ex, pa[1], name, 1.0, 0.0))
+                    occupied.setdefault(ckey(ex, ly), set()).add(name)
+                    placed_label_rects.append(label_rect(ex, ly, name, 1.0, 0.0))
                     continue
 
         for (ref, pin) in nodes:
