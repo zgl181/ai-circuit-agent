@@ -1,0 +1,48 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>04 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>基础五步实现</Text>
+      <Text style={{ fontSize: 20, color: '#4A5568' }}>必做任务全部完成：从环境搭建到可交互修正的完整链路</Text>
+    </Box>
+    <Box style={{ height: 168, flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+      {[
+        ['1', '环境搭建', 'Python 3.10+\nKiCad 8 / Git'],
+        ['2', '自然语言→BOM', '26 个元件\n真实型号选型'],
+        ['3', '连接关系 JSON', '35 网络\n110 引脚节点'],
+        ['4', 'KiCad 原理图', '双击可打开\n真实符号自包含'],
+        ['5', '交互修正', '网页输入\n六项自检兜底'],
+      ].map((n, i) => (
+        <Box key={i} style={{ flex: 1, flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <Box style={{ width: 48, height: 48, background: '#1E4FA8', borderRadius: 24, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF' }}>{n[0]}</Text></Box>
+          <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#0E3F8C', textAlign: 'center' }}>{n[1]}</Text>
+          <Text style={{ fontSize: 17, color: '#4A5568', textAlign: 'center', lineHeight: 1.45, whiteSpace: 'pre-line' }}>{n[2]}</Text>
+          {i < 4 ? <Box style={{ position: 'absolute', height: 2, background: '#C9DCF5' }} /> : null}
+        </Box>
+      ))}
+    </Box>
+    <Box style={{ height: 160, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ flex: 1, background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 20, flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 60, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>26</Text>
+        <Text style={{ fontSize: 22, color: '#1A2230' }}>个元件，含完整 BOM</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 20, flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 60, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>35</Text>
+        <Text style={{ fontSize: 22, color: '#1A2230' }}>个网络，110 引脚节点</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 20, flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+        <Text style={{ fontSize: 60, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.1 }}>6</Text>
+        <Text style={{ fontSize: 22, color: '#1A2230' }}>项一键自检，ALL PASS</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 68, background: '#1E4FA8', borderRadius: 6, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', fontWeight: 'bold', letterSpacing: '1px' }}>落地判断</Text>
+      <Text style={{ fontSize: 22, color: '#FFFFFF', flex: 1 }}>每一步都有确定产物：BOM 表 → 网表 JSON → KiCad 工程文件，且都能反向校验，不是"画个样子"。</Text>
+    </Box>
+  </Box>
+</Slide>

@@ -1,0 +1,49 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'row', gap: 40, position: 'relative', zIndex: 1 }}>
+    <Box style={{ width: 340, height: 580, background: '#1E4FA8', flexDirection: 'column', justifyContent: 'space-between', padding: 32, borderRadius: 4 }}>
+      <Box style={{ flexDirection: 'column', gap: 16 }}>
+        <Text style={{ fontSize: 16, color: '#C9DCF5', letterSpacing: '2px' }}>CONTENTS</Text>
+        <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.2 }}>答辩内容</Text>
+        <Text style={{ fontSize: 22, color: '#C9DCF5', lineHeight: 1.5 }}>五个部分<br />从问题定义到结果验证</Text>
+      </Box>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', lineHeight: 1.5 }}>AI Agent 电路板设计<br />2026.11 · 山东大学</Text>
+    </Box>
+    <Box style={{ width: 780, height: 580, flexDirection: 'column', justifyContent: 'center', gap: 16 }}>
+      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 20, height: 92, padding: 16, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6 }}>
+        <Box style={{ width: 52, height: 52, background: '#E8EFF8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>01</Text></Box>
+        <Box style={{ flexDirection: 'column', gap: 6, flex: 1 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>问题定义与总体架构</Text>
+          <Text style={{ fontSize: 22, color: '#4A5568' }}>难点、分层架构、为什么先用 JSON 做中间层</Text>
+        </Box>
+      </Box>
+      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 20, height: 92, padding: 16, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6 }}>
+        <Box style={{ width: 52, height: 52, background: '#E8EFF8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>02</Text></Box>
+        <Box style={{ flexDirection: 'column', gap: 6, flex: 1 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>基础五步实现</Text>
+          <Text style={{ fontSize: 22, color: '#4A5568' }}>环境、BOM、网表 JSON、原理图、交互修正</Text>
+        </Box>
+      </Box>
+      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 20, height: 92, padding: 16, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6 }}>
+        <Box style={{ width: 52, height: 52, background: '#E8EFF8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>03</Text></Box>
+        <Box style={{ flexDirection: 'column', gap: 6, flex: 1 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>原理图与 PCB 成果</Text>
+          <Text style={{ fontSize: 22, color: '#4A5568' }}>论文式五分区原理图、真实封装整板布局布线</Text>
+        </Box>
+      </Box>
+      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 20, height: 92, padding: 16, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6 }}>
+        <Box style={{ width: 52, height: 52, background: '#E8EFF8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>04</Text></Box>
+        <Box style={{ flexDirection: 'column', gap: 6, flex: 1 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>进阶闭环与六项验证</Text>
+          <Text style={{ fontSize: 22, color: '#4A5568' }}>DRC 反向驱动布线、自检 A–F、F1 语义错误案例</Text>
+        </Box>
+      </Box>
+      <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 20, height: 92, padding: 16, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6 }}>
+        <Box style={{ width: 52, height: 52, background: '#E8EFF8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>05</Text></Box>
+        <Box style={{ flexDirection: 'column', gap: 6, flex: 1 }}>
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>决策、边界与总结</Text>
+          <Text style={{ fontSize: 22, color: '#4A5568' }}>四个关键取舍、已知限制、过程与后续展望</Text>
+        </Box>
+      </Box>
+    </Box>
+  </Box>
+</Slide>

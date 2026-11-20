@@ -33,11 +33,15 @@ parts/
 # ===== 文档生成流水线中间产物（正式交付见根目录 .docx）=====
 output/
 
+# ===== 答辩 PPT 渲染验收临时图（正式交付见 答辩PPT/答辩PPT.pptx）=====
+答辩PPT/render/
+
 # ===== 编辑器/系统文件 =====
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+.cache/
 
 # Windows 保留名异常文件（偶发产生，勿入库）
 nul

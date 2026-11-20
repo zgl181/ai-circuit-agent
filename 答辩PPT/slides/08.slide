@@ -1,0 +1,37 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>08 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 14, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>一个真实错误：一致性校验 ≠ 正确性校验</Text>
+      <Text style={{ fontSize: 20, color: '#4A5568' }}>复核时发现 F1 保险丝被接成 5V 直接短到地——而六项自检最初全绿</Text>
+    </Box>
+    <Box style={{ height: 250, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ flex: 1, background: '#FDF5F5', border: '1px solid #F0C9C7', borderRadius: 6, padding: 18, flexDirection: 'column', gap: 12 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#D9534F' }}>✗ 错误接法（LLM 输出）</Text>
+        <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.55 }}>F1.1 → +5V，F1.2 → GND；而 USB1.1 (VBUS) 也在 +5V。</Text>
+        <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.55 }}>结果：保险丝没有串进供电路径，而是跨在 5V 与地之间，一上电近似短路。</Text>
+        <Text style={{ fontSize: 17, color: '#8B97A8', marginTop: 4 }}>ERC / 网表 / 几何 / DRC 全都查不出来</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#F0F5FC', border: '1px solid #C9DCF5', borderRadius: 6, padding: 18, flexDirection: 'column', gap: 12 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>✓ 修复后接法</Text>
+        <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.55 }}>拆出 USB_VBUS 网络（USB1.1 + F1.1），F1.2 改接 +5V。</Text>
+        <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.55 }}>F1 真正串联在 USB 输入与系统电源之间，网络 34 → 35。</Text>
+        <Text style={{ fontSize: 17, color: '#1E4FA8', marginTop: 4 }}>新增 F 项回归：改回旧接法立即 FAIL</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 150, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 18, flexDirection: 'column', gap: 10 }}>
+      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C' }}>根因分析</Text>
+      <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55 }}>A–E 项验证的是"生成文件是否忠实于 design.json"——它们保证下游不出错，却不检验 design.json 本身的电路语义。</Text>
+      <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55 }}>中间层写错时，下游越"忠实"越查不出来。必须补一层领域语义规则：保险丝、限流电阻不得跨接电源与地。</Text>
+    </Box>
+    <Box style={{ height: 60, background: '#1E4FA8', borderRadius: 6, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', fontWeight: 'bold', letterSpacing: '1px' }}>收获</Text>
+      <Text style={{ fontSize: 21, color: '#FFFFFF', flex: 1 }}>人工复核 + F 项自检补上这个盲区，是本项目最有价值的方法论产出。</Text>
+    </Box>
+  </Box>
+</Slide>

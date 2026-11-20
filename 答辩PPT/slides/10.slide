@@ -1,0 +1,36 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 20, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>完成情况与后续展望</Text>
+      <Text style={{ fontSize: 20, color: '#4A5568' }}>评分点逐项对照，已完成与未完成都如实呈现</Text>
+    </Box>
+    <Box style={{ height: 290, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ width: 620, flexDirection: 'column', gap: 8 }}>
+        {[
+          ['基础五步', '40', '已完成', '#1E4FA8'],
+          ['进阶：布局布线 + DRC 闭环', '20', '已完成', '#1E4FA8'],
+          ['设计报告', '20', '已完成', '#1E4FA8'],
+          ['答辩 / 过程', '20', '本次答辩', '#3D7BD9'],
+        ].map((n, i) => (
+          <Box key={i} style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            <Text style={{ fontSize: 19, color: '#1A2230', flex: 1 }}>{n[0]}</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: n[3] }}>{n[1]} 分</Text>
+            <Text style={{ fontSize: 17, color: n[3], width: 76, textAlign: 'right' }}>{n[2]}</Text>
+          </Box>
+        ))}
+      </Box>
+      <Box style={{ flex: 1, background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 18, flexDirection: 'column', gap: 10 }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C' }}>W8 四样交付物</Text>
+        <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.7 }}>✓ 代码仓库 + README<br />✓ 设计报告（Word）<br />✓ 答辩 PPT（本文件）<br />○ 演示视频（待录制）</Text>
+        <Box style={{ height: 1, background: '#C9DCF5' }} />
+        <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.5 }}>后续展望：多 Agent 协作、仿真评测</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 150, background: '#1E4FA8', borderRadius: 6, padding: 24, flexDirection: 'column', justifyContent: 'center', gap: 12, alignItems: 'center' }}>
+      <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#FFFFFF' }}>谢谢，请批评指正</Text>
+      <Text style={{ fontSize: 22, color: '#C9DCF5' }}>张熙玥 · 山东大学 · 2026 年 11 月</Text>
+    </Box>
+  </Box>
+</Slide>

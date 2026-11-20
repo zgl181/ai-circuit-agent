@@ -1,0 +1,53 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>09 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 14, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>关键取舍、已知边界与过程管理</Text>
+      <Text style={{ fontSize: 20, color: '#4A5568' }}>四个体现工程判断的决策，以及如实陈述的限制</Text>
+    </Box>
+    <Box style={{ height: 286, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ width: 700, flexDirection: 'column', gap: 12 }}>
+        <Box style={{ height: 137, flexDirection: 'row', gap: 12 }}>
+          {[
+            ['01', '换 Wuerth USB 封装', 'Molex 版 8 个屏蔽焊盘把信号脚围死，线引不出来'],
+            ['02', '铺铜移到独立进程', 'pcbnew 同进程反复填铜皮会段错误'],
+          ].map((n, i) => (
+            <Box key={i} style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 12, flexDirection: 'column', gap: 6 }}>
+              <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>{n[0]} {n[1]}</Text>
+              <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.4 }}>{n[2]}</Text>
+            </Box>
+          ))}
+        </Box>
+        <Box style={{ height: 137, flexDirection: 'row', gap: 12 }}>
+          {[
+            ['03', '板框 140×90→140×62', '原下半幅大片空白，收紧后元件铺满'],
+            ['04', '放宽密集焊盘端点', '0.65mm 间距下 A* 起点被邻网障碍吃掉'],
+          ].map((n, i) => (
+            <Box key={i} style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 12, flexDirection: 'column', gap: 6 }}>
+              <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>{n[0]} {n[1]}</Text>
+              <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.4 }}>{n[2]}</Text>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+      <Box style={{ flex: 1, background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 16, flexDirection: 'column', gap: 10 }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C' }}>过程时间线</Text>
+        <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.55 }}>10-20 立项与环境<br />W1–W3 基础五步打通<br />W4–W5 进阶 PCB + DRC<br />W6–W7 复核修正 F1<br />11-17 W8 设计报告</Text>
+        <Box style={{ height: 1, background: '#C9DCF5' }} />
+        <Text style={{ fontSize: 17, color: '#1E4FA8', fontWeight: 'bold' }}>共 20 次提交，全程留痕</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 120, background: '#FDF5F5', border: '1px solid #F0C9C7', borderRadius: 6, padding: 16, flexDirection: 'column', gap: 8 }}>
+      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#D9534F' }}>已知边界（如实陈述）</Text>
+      <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.55 }}>· PCB 仍有 22 条连接待人工补线（未连接，非违规）　· ERC 144 条均为良性 warning　· 未做仿真评测</Text>
+    </Box>
+    <Box style={{ flex: 1, background: '#1E4FA8', borderRadius: 6, padding: 10, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 20, color: '#FFFFFF', flex: 1 }}>每一处取舍都对应一个可复述的"为什么"，这正是答辩要证明的工程判断力。</Text>
+    </Box>
+  </Box>
+</Slide>

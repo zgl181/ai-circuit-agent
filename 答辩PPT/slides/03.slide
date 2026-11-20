@@ -1,0 +1,52 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>03 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 18, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>问题定义与总体架构</Text>
+      <Text style={{ fontSize: 20, color: '#4A5568' }}>核心难点：自然语言无法直接产出引脚级连接，CAD 文件也不能交给模型直接生成</Text>
+    </Box>
+    <Box style={{ height: 100, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      {[
+        ['① 一句话需求', 'Arduino 最小系统板'],
+        ['② LLM 结构化', 'BOM + 网表 JSON'],
+        ['③ Python 转换', '确定性生成 / 校验'],
+        ['④ KiCad 8', '原理图 + PCB 文件'],
+        ['⑤ 反向验证', '网表 / ERC / DRC'],
+      ].map((n, i) => (
+        <Box key={i} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Box style={{ flex: 1, height: 92, background: '#E8EFF8', border: '1px solid #C9DCF5', borderRadius: 6, padding: 12, flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8', textAlign: 'center' }}>{n[0]}</Text>
+            <Text style={{ fontSize: 16, color: '#4A5568', textAlign: 'center' }}>{n[1]}</Text>
+          </Box>
+          {i < 4 ? <Text style={{ fontSize: 22, color: '#3D7BD9', fontWeight: 'bold' }}>→</Text> : null}
+        </Box>
+      ))}
+    </Box>
+    <Box style={{ height: 250, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 20, flexDirection: 'column', gap: 12 }}>
+        <Box style={{ width: 36, height: 36, background: '#1E4FA8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>1</Text></Box>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C' }}>为什么先做中间层</Text>
+        <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5 }}>让模型只输出 JSON。可校验、可逐引脚比对、可与 CAD 生成解耦，出错时能定位到具体网络。</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 20, flexDirection: 'column', gap: 12 }}>
+        <Box style={{ width: 36, height: 36, background: '#1E4FA8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>2</Text></Box>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C' }}>三层各司其职</Text>
+        <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5 }}>LLM 负责语义理解；Python 负责布局、连线、符号生成；KiCad 提供真实可打开的工程文件。</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#F7F9FC', border: '1px solid #E5E7EB', borderRadius: 6, padding: 20, flexDirection: 'column', gap: 12 }}>
+        <Box style={{ width: 36, height: 36, background: '#1E4FA8', borderRadius: 6, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>3</Text></Box>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#0E3F8C' }}>验证贯穿始终</Text>
+        <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5 }}>反导网表逐引脚比对、ERC 电气规则、DRC 报告反向驱动补线，形成可证明的闭环。</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 68, background: '#1E4FA8', borderRadius: 6, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', fontWeight: 'bold', letterSpacing: '1px' }}>核心决策</Text>
+      <Text style={{ fontSize: 22, color: '#FFFFFF', flex: 1 }}>让模型只做它擅长的语义理解，把确定性工作交给代码——中间层可校验、可比对、可解耦。</Text>
+    </Box>
+  </Box>
+</Slide>

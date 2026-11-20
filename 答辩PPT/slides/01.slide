@@ -1,0 +1,22 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 20, paddingTop: 40 }}>
+      <Text style={{ fontSize: 18, color: '#3D7BD9', letterSpacing: '2px' }}>课程大作业 · 期末答辩</Text>
+      <Text style={{ fontSize: 60, fontWeight: 'bold', color: '#0E3F8C', lineHeight: 1.15 }}>AI Agent 电路板设计</Text>
+      <Text style={{ fontSize: 26, fontFamily: 'Times New Roman, serif', color: '#1E4FA8', lineHeight: 1.4 }}>From Natural Language to BOM, Netlist,<br />Schematic and PCB</Text>
+      <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5 }}>一句话需求 → BOM / 网表 → KiCad 原理图 → PCB → DRC 自检</Text>
+      <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5 }}>以 Arduino 最小系统板为例：26 个元件、35 个网络、引脚级连接全部可追溯</Text>
+    </Box>
+    <Box style={{ flexDirection: 'column', gap: 18 }}>
+      <Box style={{ height: 1, background: '#D6DCE5' }} />
+      <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Box style={{ flexDirection: 'column', gap: 8 }}>
+          <Text style={{ fontSize: 22, color: '#1A2230' }}>汇报人：张熙玥　　山东大学</Text>
+          <Text style={{ fontSize: 16, color: '#8B97A8' }}>2026 年 11 月 · AI Agent 电路板设计课程</Text>
+        </Box>
+        <Text style={{ fontSize: 16, color: '#1E4FA8' }}>26 元件 · 35 网络 · 六项自检 ALL PASS</Text>
+      </Box>
+    </Box>
+  </Box>
+</Slide>

@@ -1,0 +1,41 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>07 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 14, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <Box style={{ flexDirection: 'column', gap: 6 }}>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>验证与评测：六项一键自检</Text>
+        <Text style={{ fontSize: 20, color: '#4A5568' }}>verify_schematic.py 一条命令跑完全链路，退出码 0 才通过</Text>
+      </Box>
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>ALL PASS ✓</Text>
+    </Box>
+    <Box style={{ height: 426 }}>
+      <Table
+        style={{ width: '100%', height: '100%' }}
+        defaultTextStyle={{ fontSize: 19, textAlign: 'left', color: '#1A2230' }}
+        defaultCellStyle={{ border: { left: { width: 1, color: '#E5E7EB' }, right: { width: 1, color: '#E5E7EB' }, top: { width: 1, color: '#E5E7EB' }, bottom: { width: 1, color: '#E5E7EB' } } }}
+        cells={[
+          [
+            { text: '检查项', textStyle: { bold: true, color: '#FFFFFF', fontSize: 20 }, cellStyle: { background: { color: '#1E4FA8' } } },
+            { text: '方法', textStyle: { bold: true, color: '#FFFFFF', fontSize: 20 }, cellStyle: { background: { color: '#1E4FA8' } } },
+            { text: '当前结果', textStyle: { bold: true, color: '#FFFFFF', fontSize: 20 }, cellStyle: { background: { color: '#1E4FA8' } } },
+          ],
+          ['A 网表一致性', 'kicad-cli 反导网表逐引脚比对', { text: '35/35 一致，0 短路', textStyle: { color: '#1E4FA8', bold: true } }],
+          [{ text: 'B 电气规则', cellStyle: { background: { color: '#F7F9FC' } } }, { text: '解析 erc.txt 的 error', cellStyle: { background: { color: '#F7F9FC' } } }, { text: '0 error（144 良性 warning）', textStyle: { color: '#1E4FA8', bold: true }, cellStyle: { background: { color: '#F7F9FC' } } }],
+          ['C 排版几何', '按内嵌符号真实坐标查重叠', { text: '26 元件/108 标签，四项全 0', textStyle: { color: '#1E4FA8', bold: true } }],
+          [{ text: 'D 导线不穿模', cellStyle: { background: { color: '#F7F9FC' } } }, { text: '逐段采样查元件本体', cellStyle: { background: { color: '#F7F9FC' } } }, { text: '112 段导线，穿模 0', textStyle: { color: '#1E4FA8', bold: true }, cellStyle: { background: { color: '#F7F9FC' } } }],
+          ['E PCB / DRC 闭环', '违规必须为 0 且未连接下降', { text: '违规 0，未连接 58→22', textStyle: { color: '#1E4FA8', bold: true } }],
+          [{ text: 'F 电源语义', cellStyle: { background: { color: '#F7F9FC' } } }, { text: '校验保护器件不跨电源-地', cellStyle: { background: { color: '#F7F9FC' } } }, { text: 'PASS（F1 串联正确）', textStyle: { color: '#1E4FA8', bold: true }, cellStyle: { background: { color: '#F7F9FC' } } }],
+        ]}
+      />
+    </Box>
+    <Box style={{ height: 56, background: '#1E4FA8', borderRadius: 6, padding: 12, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', fontWeight: 'bold', letterSpacing: '1px' }}>方法论</Text>
+      <Text style={{ fontSize: 21, color: '#FFFFFF', flex: 1 }}>数字全部来自真实产物反导，可复现、可追溯——不是手工填的"漂亮结果"。</Text>
+    </Box>
+  </Box>
+</Slide>

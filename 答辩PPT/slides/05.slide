@@ -1,0 +1,40 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>05 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <Box style={{ flexDirection: 'column', gap: 6 }}>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>成果一：论文式 KiCad 原理图</Text>
+        <Text style={{ fontSize: 20, color: '#4A5568' }}>这是 KiCad 工程文件，双击可打开，不是一张画出来的图片</Text>
+      </Box>
+      <Text style={{ fontSize: 16, color: '#8B97A8' }}>outputs/design.kicad_sch</Text>
+    </Box>
+    <Box style={{ height: 418, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ width: 620, height: 418, background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 8, alignItems: 'center', justifyContent: 'center' }}>
+        <Image src="assets/schematic.png" style={{ width: 600, height: 398, objectFit: 'contain' }} />
+      </Box>
+      <Box style={{ flex: 1, height: 418, flexDirection: 'column', gap: 14 }}>
+        <Box style={{ background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 14, flexDirection: 'column', gap: 6 }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C' }}>外观：像论文插图</Text>
+          <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5 }}>五个虚线功能区 + 标题；ATmega328P 左 1–14、右 28–15 对称双列；真实库符号。</Text>
+        </Box>
+        <Box style={{ background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 14, flexDirection: 'column', gap: 6 }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C' }}>读图三约定</Text>
+          <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5 }}>U/R/C/D 是位号不是型号；同名网络标签即电气连通；仅两条 LED 支路画实线串联。</Text>
+        </Box>
+        <Box style={{ background: '#E8EFF8', border: '1px solid #C9DCF5', borderRadius: 6, padding: 14, flexDirection: 'column', gap: 6 }}>
+          <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>数据佐证</Text>
+          <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5 }}>26 元件 / 108 标签 / 112 段导线 0 穿模；反导网表 35/35 一致、0 短路。</Text>
+        </Box>
+      </Box>
+    </Box>
+    <Box style={{ height: 60, background: '#1E4FA8', borderRadius: 6, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', fontWeight: 'bold', letterSpacing: '1px' }}>结论</Text>
+      <Text style={{ fontSize: 22, color: '#FFFFFF', flex: 1 }}>图的位置只为易读，与未来 PCB 上元件摆哪儿无关；电气连接由网络名与网表唯一确定。</Text>
+    </Box>
+  </Box>
+</Slide>

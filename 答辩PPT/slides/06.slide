@@ -1,0 +1,45 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', paddingTop: 80, paddingLeft: 60, paddingRight: 60, paddingBottom: 60, fontFamily: 'Microsoft YaHei, Arial, sans-serif', color: '#1A2230', position: 'relative' }}>
+  <Box style={{ position: 'absolute', top: 0, left: 0, width: 1280, height: 14, background: '#1E4FA8' }} />
+  <Box style={{ position: 'absolute', top: 14, left: 0, width: 1280, height: 1, background: '#D6DCE5' }} />
+  <Box style={{ position: 'absolute', bottom: 24, left: 60, width: 1160, flexDirection: 'row', justifyContent: 'space-between' }}>
+    <Text style={{ fontSize: 14, color: '#8B97A8' }}>AI Agent 电路板设计 · 山东大学</Text>
+    <Text style={{ fontSize: 14, color: '#1E4FA8' }}>06 / 10</Text>
+  </Box>
+  <Box style={{ width: 1160, height: 580, flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
+    <Box style={{ flexDirection: 'column', gap: 6 }}>
+      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#0E3F8C' }}>进阶项：PCB 布局布线与 DRC 闭环</Text>
+      <Text style={{ fontSize: 20, color: '#4A5568' }}>26 个官方封装 · 140×62mm 分区布局 · 双层 A* 自动布线 + GND 铺铜</Text>
+    </Box>
+    <Box style={{ height: 294, flexDirection: 'row', gap: 20 }}>
+      <Box style={{ width: 560, height: 294, background: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 8, alignItems: 'center', justifyContent: 'center' }}>
+        <Image src="assets/pcb.png" style={{ width: 540, height: 274, objectFit: 'contain' }} />
+      </Box>
+      <Box style={{ flex: 1, height: 294, background: '#F0F5FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: 16, flexDirection: 'column', gap: 10 }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#0E3F8C' }}>DRC 报告反向驱动补线</Text>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={{ fontSize: 18, color: '#1A2230' }}>kicad-cli 导出违规 JSON</Text></Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={{ fontSize: 18, color: '#1A2230' }}>解析未连接端点与坐标</Text></Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={{ fontSize: 18, color: '#1A2230' }}>双层网格 A* 自动补线</Text></Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><Text style={{ fontSize: 18, color: '#1A2230' }}>重建板子 → 再跑 DRC ↺</Text></Box>
+        <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.5, marginTop: 4 }}>每轮把"缺线"补上再重跑，未连接项逐轮下降，直到收敛。</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 100, flexDirection: 'row', gap: 14 }}>
+      <Box style={{ flex: 1, background: '#E8EFF8', borderRadius: 6, padding: 12, flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>0</Text>
+        <Text style={{ fontSize: 17, color: '#1A2230' }}>设计规则违规</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#E8EFF8', borderRadius: 6, padding: 12, flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>58→22</Text>
+        <Text style={{ fontSize: 17, color: '#1A2230' }}>未连接项</Text>
+      </Box>
+      <Box style={{ flex: 1, background: '#E8EFF8', borderRadius: 6, padding: 12, flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>223</Text>
+        <Text style={{ fontSize: 17, color: '#1A2230' }}>段走线 / 25 过孔</Text>
+      </Box>
+    </Box>
+    <Box style={{ height: 68, background: '#1E4FA8', borderRadius: 6, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+      <Text style={{ fontSize: 16, color: '#C9DCF5', fontWeight: 'bold', letterSpacing: '1px' }}>边界</Text>
+      <Text style={{ fontSize: 21, color: '#FFFFFF', flex: 1 }}>仍有 22 条未布通（KiCad 无命令行布线器，需人工补线）——是"未连接"，不是"违规"。</Text>
+    </Box>
+  </Box>
+</Slide>
