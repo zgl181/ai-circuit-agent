@@ -18,7 +18,7 @@ import subprocess
 import re
 import threading
 import webbrowser
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -34,8 +34,20 @@ import kicad_sch         # noqa: E402
 import db                # noqa: E402
 
 
+_OUTPUT_LOCK = threading.Lock()
+
+
 def _write_outputs(design, prompt):
-    """把设计落盘为 json/net/sch/svg，返回 (files_dict, svg_ok)。"""
+    """把设计落盘为 json/net/sch/svg，返回 (files_dict, svg_ok)。
+
+    串行化整段写产物：多线程下若两次生成并发，json/net/sch/svg 四个文件必须
+    来自同一个 design，否则前端预览会读到"半新半旧"的错乱组合。
+    """
+    with _OUTPUT_LOCK:
+        return _write_outputs_locked(design, prompt)
+
+
+def _write_outputs_locked(design, prompt):
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, "design.json"), "w", encoding="utf-8") as f:
         json.dump(design, f, ensure_ascii=False, indent=2)
@@ -267,4 +279,8 @@ if __name__ == "__main__":
     print("=" * 50)
     if os.environ.get("NO_BROWSER") != "1":
         threading.Timer(1.0, lambda: webbrowser.open(f"http://localhost:{PORT}")).start()
-    HTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
+    # 多线程：慢 LLM 生成/微调请求不再阻塞首页、SVG 预览等只读请求，
+    # 避免"一次卡住整页打不开"和由此误触发的重复提交/覆盖。
+    srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+    srv.daemon_threads = True
+    srv.serve_forever()
