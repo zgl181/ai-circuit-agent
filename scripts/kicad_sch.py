@@ -573,11 +573,13 @@ def adaptive_layout(comps, comp_pins, valid_nets):
     X0, X1, Y0, Y1 = 18.0, 290.0, 18.0, 168.0
     avail_w, avail_h = X1 - X0, Y1 - Y0
 
-    # 列数自适应：优先列少（框大、更舒展）；装不下再逐列增加（更多列=更少行=更矮），
-    # 直到宽高都落在纸内或到列数上限。避免大芯片撑高整行后分区框顶穿标题栏。
+    # 列数自适应：优先"横向铺开"（列多、行少）——论文式功能分区是从左到右读的，
+    # 竖着堆成一列会又高又空、缩在纸中央。故从最多列往回退，取第一个宽高都落在
+    # 纸内的方案；若都不满足，退回最紧凑列数。
     n = len(specs)
     best = None
-    for cols in range(1, min(n, 4) + 1):
+    fallback = None
+    for cols in range(min(n, 4), 0, -1):
         rows = (n + cols - 1) // cols
         colw = [0.0] * cols
         rowh = [0.0] * rows
@@ -588,13 +590,23 @@ def adaptive_layout(comps, comp_pins, valid_nets):
         tw = sum(colw) + gap_x * (cols - 1)
         th = sum(rowh) + gap_y * (rows - 1)
         cand = (cols, rows, colw, rowh, tw, th)
-        if best is None:
-            best = cand
+        if fallback is None:
+            fallback = cand
         if th <= avail_h and tw <= avail_w:
             best = cand
             break
-        best = cand  # 记录最后一个，实在装不下时用最紧凑的列数
+    if best is None:
+        best = fallback
     cols, rows, colw, rowh, total_w, total_h = best
+
+    # 横向铺满：中小设计组少、框窄，若总宽明显小于可用宽度，等比放大列宽让分区框
+    # 铺满纸面。元件位置按新框宽重新居中（见下方 gx），不会变稀疏；避免整张图缩成
+    # 纸中央的一小条、四周大片留白。
+    FILL = 0.94
+    if cols > 1 and total_w > 0 and total_w < avail_w * FILL:
+        scale = (avail_w * FILL) / total_w
+        colw = [w * scale for w in colw]
+        total_w = sum(colw) + gap_x * (cols - 1)
     ox = X0 + max(0.0, (avail_w - total_w) / 2.0)
     oy = Y0 + max(0.0, (avail_h - total_h) / 2.0)
 
