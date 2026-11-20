@@ -490,6 +490,132 @@ def order_components(comps, valid_nets):
     return ordered
 
 
+def adaptive_layout(comps, comp_pins, valid_nets):
+    """通用自适应布局：不再套用 Arduino 的固定五分区。
+
+    按元件类型 + 连接关系把实际存在的元件分成功能组；空组直接丢弃（不画空框）；
+    每个框贴合组内内容大小，所有框在可用区域内居中铺满。返回 (pos, zones)。
+    """
+    GROUP_RULES = [
+        ("POWER INPUT", ['电池', '稳压', '电源', '保险', 'battery', 'regulator', 'fuse', 'ldo', '7805']),
+        ("MAIN CONTROL", ['单片机', 'mcu', '微控', 'microcontroller', '微处理器',
+                          '芯片', '运放', 'opamp', '74hc', 'fpga', 'cpld']),
+        ("CLOCK / OSCILLATOR", ['晶振', 'crystal', 'oscillator', 'clock']),
+        ("USER INPUT", ['开关', '按钮', '按键', '电位器', 'switch', 'button', 'potentiometer']),
+        ("OUTPUT / INDICATOR", ['led', '发光', '二极管', 'diode', '蜂鸣器', 'buzzer', '显示']),
+        ("CONNECTOR / I-O", ['连接器', '接插件', '排针', 'connector', 'header', 'usb']),
+    ]
+    PASSIVE = "PASSIVE / SUPPORT"
+    groups = {title: [] for title, _ in GROUP_RULES}
+    groups[PASSIVE] = []
+    assigned = {}
+
+    def signature(c):
+        return ((c.get("type") or "") + " " + (c.get("value") or "") + " " + c["ref"]).lower()
+
+    for c in comps:
+        hit = None
+        for title, kws in GROUP_RULES:
+            if any(k in signature(c) for k in kws):
+                hit = title
+                break
+        if hit:
+            groups[hit].append(c["ref"])
+            assigned[c["ref"]] = hit
+    # 未分类的阻容：按连接关系挂靠到它相连的已分类元件所在组，剩下的归 PASSIVE
+    for c in comps:
+        if c["ref"] in assigned:
+            continue
+        host = None
+        for _name, nodes in valid_nets:
+            refs = [r for r, _p in nodes]
+            if c["ref"] in refs:
+                for r in refs:
+                    if r in assigned and assigned[r] != PASSIVE:
+                        host = assigned[r]
+                        break
+            if host:
+                break
+        title = host or PASSIVE
+        groups[title].append(c["ref"])
+        assigned[c["ref"]] = title
+
+    ordered = [(t, refs) for t, refs in groups.items() if refs]
+    if not ordered:
+        return {}, []
+
+    def half(ref):
+        pins = list(comp_pins.get(ref, {}).values())
+        if not pins:
+            return (6.0, 6.0)
+        xs = [p[0] for p in pins]
+        ys = [p[1] for p in pins]
+        return (max(abs(min(xs)), abs(max(xs))) + 1.0,
+                max(abs(min(ys)), abs(max(ys))) + 1.0)
+
+    inner, title_h, gap_x, gap_y = 7.0, 9.0, 10.0, 12.0
+    # 单元高上限：DIP-28 这类大芯片 half 高 ~18mm，若按它撑高整行会把框顶到
+    # 标题栏外。用上限 + 居中放置，大芯片本身仍有安全区 clamp 兜底。
+    CH_CAP = 34.0
+    specs = []
+    for title, refs in ordered:
+        per_row = min(4, len(refs))
+        cw = min(46.0, max(half(r)[0] * 2 + 6 for r in refs))
+        ch = min(CH_CAP, max(half(r)[1] * 2 + 6 for r in refs))
+        rows_n = (len(refs) + per_row - 1) // per_row
+        specs.append({"title": title, "refs": refs, "per_row": per_row,
+                      "cw": cw, "ch": ch,
+                      "gw": per_row * cw + 2 * inner,
+                      "gh": title_h + rows_n * ch + 2 * inner})
+
+    # 垂直方向统一封顶到 168：KiCad 标题栏固定在右下角（约 X≥178, Y≥172），
+    # 用 168 全局封顶可保证任何分组都不会压到标题栏；水平仍按整幅居中。
+    X0, X1, Y0, Y1 = 18.0, 290.0, 18.0, 168.0
+    avail_w, avail_h = X1 - X0, Y1 - Y0
+
+    # 列数自适应：优先列少（框大、更舒展）；装不下再逐列增加（更多列=更少行=更矮），
+    # 直到宽高都落在纸内或到列数上限。避免大芯片撑高整行后分区框顶穿标题栏。
+    n = len(specs)
+    best = None
+    for cols in range(1, min(n, 4) + 1):
+        rows = (n + cols - 1) // cols
+        colw = [0.0] * cols
+        rowh = [0.0] * rows
+        for i, s in enumerate(specs):
+            r, c = divmod(i, cols)
+            colw[c] = max(colw[c], s["gw"])
+            rowh[r] = max(rowh[r], s["gh"])
+        tw = sum(colw) + gap_x * (cols - 1)
+        th = sum(rowh) + gap_y * (rows - 1)
+        cand = (cols, rows, colw, rowh, tw, th)
+        if best is None:
+            best = cand
+        if th <= avail_h and tw <= avail_w:
+            best = cand
+            break
+        best = cand  # 记录最后一个，实在装不下时用最紧凑的列数
+    cols, rows, colw, rowh, total_w, total_h = best
+    ox = X0 + max(0.0, (avail_w - total_w) / 2.0)
+    oy = Y0 + max(0.0, (avail_h - total_h) / 2.0)
+
+    pos, zones = {}, []
+    for i, s in enumerate(specs):
+        rr, cc = divmod(i, cols)
+        bx = ox + sum(colw[:cc]) + gap_x * cc
+        by = oy + sum(rowh[:rr]) + gap_y * rr
+        bw, bh = colw[cc], rowh[rr]
+        zones.append((bx, by, bx + bw, by + bh, s["title"]))
+        refs, pr, cw, ch = s["refs"], s["per_row"], s["cw"], s["ch"]
+        used_w = pr * cw
+        used_h = ((len(refs) + pr - 1) // pr) * ch
+        gx = bx + (bw - used_w) / 2.0
+        gy = by + title_h + inner + max(0.0, (bh - title_h - 2 * inner - used_h) / 2.0)
+        for j, ref in enumerate(refs):
+            r, c = divmod(j, pr)
+            pos[ref] = (gx + c * cw + cw / 2.0, gy + r * ch + ch / 2.0)
+    return pos, zones
+
+
 def build_sch(design):
     comps = design.get("components", [])
     nets = design.get("nets", [])
@@ -653,61 +779,62 @@ def build_sch(design):
         ud = sum(1 for r in rots if r in (90, 270))
         return "ud" if ud else "lr"
 
-    cx, cy = 155.0, 138.0
     comp_set = {c["ref"] for c in comps}
-    if mcu is not None:
-        pos[mcu["ref"]] = (cx, cy)
 
-    # 论文式分区布局：整张纸切成 5 个带虚线框 + 标题的功能区，元件只在自己的
-    # 框内排布、按支路方向对齐，读图人一眼就能定位，不必全屏搜索。
-    #
-    #   ┌──①POWER──┬────②USB-UART────┬──────③MCU CORE──────┬───④I/O───┐
-    #   │ USB/F1/C10│ CH340G + 12MHz  │ 16MHz 时钟          │ 去耦      │
-    #   │           │                │ 左右对称 DIP-28 主控 │ 排针/ICSP │
-    #   ├───────────┴────────────────┴──────────────────────┴───────────┤
-    #   │ ⑤ STATUS LEDs / RESET                            │ 标题栏    │
-    #   └───────────────────────────────────────────────────┴───────────┘
-    #
-    # 关键：串联支路的元件必须"引脚同向"排成一条直线（R 用横放符号、LED 也是横放），
-    # 旧版把竖直电阻和水平 LED 混排在同一行，水平导线会穿过电阻本体，
-    # 看起来就像"几个元件被一条线串起来"。
-    PLACE = {
-        # ① 电源入口：竖直一列（+5V 在上、GND 在下）
-        "USB1": (40, 44), "F1": (40, 78), "C10": (40, 110),
-        # ② USB 转串口：CH340G 居中，去耦在上/右，12MHz 晶振与负载电容在下排
-        "C5":  (108, 32), "U2": (84, 76), "C8": (108, 112),
-        "C6":  (66, 132), "Y2": (86, 132), "C7": (106, 132),
-        # ③ 主控：16MHz 时钟在正上方，对称双列 DIP-28 居中（左右标签带各留 ~22mm）
-        "C1":  (145, 48), "Y1": (173, 48), "C2": (201, 48),
-        "U1":  (173, 100),
-        # ④ 去耦 + 扩展接口：三颗 100nF 在上排，排针/ICSP 在下排
-        "C3":  (230, 46), "C11": (252, 46), "C4": (274, 46),
-        "H_D": (241, 82), "H_A": (276, 74), "ICSP1": (258, 122),
-        # ⑤ 状态指示（水平串联，R→LED 一条直线，两支路拉开 22mm 给中间网络标签）
-        "R3":  (36, 162), "D2": (66, 162),
-        "R2":  (106, 162), "D1": (136, 162),
-        # 复位 / 自动下载放第二行，与 LED 支路错开，避免文字与标签叠压
-        "R1":  (60, 182), "SW1": (110, 182), "C9": (150, 182),
-    }
+    # 两条排版路线：
+    #  (A) Arduino 最小系统板完整版（ATmega328P + CH340G，约 26 元件）——沿用经
+    #      人工验收、报告引用的固定论文式五分区坐标，保证已交付产物零回归。
+    #  (B) 其它任何需求——用 adaptive_layout 按实际元件动态分组：空组不画框、
+    #      框贴合内容、整体居中铺满。这才是"一键生成/微调都好看"的通用路径。
+    is_arduino_full = (
+        mcu is not None
+        and any(w in ((mcu.get("value") or "") + (mcu.get("type") or "")).lower()
+                for w in ["atmega328", "328p"])
+        and len(comps) >= 18
+    )
 
-    # 功能分区虚线框（纯图形，不参与电气连接 / ERC）
-    ZONES = [
-        (14, 24, 46, 146, "1 POWER INPUT"),
-        (50, 24, 126, 146, "2 USB-UART  CH340G"),
-        (130, 24, 216, 140, "3 MCU CORE  ATmega328P-PU"),
-        (220, 24, 285, 146, "4 DECOUPLING / I-O HEADERS"),
-        (14, 150, 172, 196, "5 STATUS LED / RESET"),
-    ]
-    for r, (px, py) in PLACE.items():
-        if r in comp_set:
-            pos[r] = (px, py)
-
-    # 未显式放置的元件用网格兜底（落在安全区内）
-    leftover = [c["ref"] for c in comps if c["ref"] not in pos]
-    gi = 0
-    for r in leftover:
-        pos[r] = (60.0 + (gi % 4) * 55.0, 120.0 + (gi // 4) * 40.0)
-        gi += 1
+    if is_arduino_full:
+        cx, cy = 155.0, 138.0
+        if mcu is not None:
+            pos[mcu["ref"]] = (cx, cy)
+        # 论文式分区布局：整张纸切成 5 个带虚线框 + 标题的功能区。
+        # 关键：串联支路的元件"引脚同向"排成直线（R 横放、LED 横放）。
+        PLACE = {
+            "USB1": (40, 44), "F1": (40, 78), "C10": (40, 110),
+            "C5":  (108, 32), "U2": (84, 76), "C8": (108, 112),
+            "C6":  (66, 132), "Y2": (86, 132), "C7": (106, 132),
+            "C1":  (145, 48), "Y1": (173, 48), "C2": (201, 48),
+            "U1":  (173, 100),
+            "C3":  (230, 46), "C11": (252, 46), "C4": (274, 46),
+            "H_D": (241, 82), "H_A": (276, 74), "ICSP1": (258, 122),
+            "R3":  (36, 162), "D2": (66, 162),
+            "R2":  (106, 162), "D1": (136, 162),
+            "R1":  (60, 182), "SW1": (110, 182), "C9": (150, 182),
+        }
+        ZONES = [
+            (14, 24, 46, 146, "1 POWER INPUT"),
+            (50, 24, 126, 146, "2 USB-UART  CH340G"),
+            (130, 24, 216, 140, "3 MCU CORE  ATmega328P-PU"),
+            (220, 24, 285, 146, "4 DECOUPLING / I-O HEADERS"),
+            (14, 150, 172, 196, "5 STATUS LED / RESET"),
+        ]
+        for r, (px, py) in PLACE.items():
+            if r in comp_set:
+                pos[r] = (px, py)
+        leftover = [c["ref"] for c in comps if c["ref"] not in pos]
+        gi = 0
+        for r in leftover:
+            pos[r] = (60.0 + (gi % 4) * 55.0, 120.0 + (gi // 4) * 40.0)
+            gi += 1
+    else:
+        auto_pos, ZONES = adaptive_layout(comps, comp_pins, valid_nets)
+        pos.update(auto_pos)
+        # 极端情况（无功能分组）兜底：均匀网格，避免元件堆叠在原点
+        leftover = [c["ref"] for c in comps if c["ref"] not in pos]
+        gi = 0
+        for r in leftover:
+            pos[r] = (60.0 + (gi % 4) * 55.0, 90.0 + (gi // 4) * 40.0)
+            gi += 1
 
     # 兜底：把"元件本体 + 向外引出标签"整体限制在安全区内。
     # 右下角标题栏单独处理：只有落在 X≥TITLE_X0 的元件才把 Y 上限压到 168，
