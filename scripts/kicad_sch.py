@@ -513,6 +513,15 @@ def adaptive_layout(comps, comp_pins, valid_nets):
     def signature(c):
         return ((c.get("type") or "") + " " + (c.get("value") or "") + " " + c["ref"]).lower()
 
+    # 串联标记 [SERIES:R2:L]：增量追加的串联元件要贴着目标元件摆放，
+    # 便于一眼看出"电阻→电阻→LED"的串联关系，而不是散落到别的分区。
+    def series_tag(c):
+        m = re.search(r"\[SERIES:([A-Za-z]{1,3}\d+):([LR])\]", c.get("note", "") or "")
+        return (m.group(1), m.group(2)) if m else None
+
+    tags = {c["ref"]: series_tag(c) for c in comps}
+    tagged = {r: t for r, t in tags.items() if t}
+
     for c in comps:
         hit = None
         for title, kws in GROUP_RULES:
@@ -539,6 +548,24 @@ def adaptive_layout(comps, comp_pins, valid_nets):
         title = host or PASSIVE
         groups[title].append(c["ref"])
         assigned[c["ref"]] = title
+
+    # 串联元件强制归到目标所在组，并把组内顺序调整为目标相邻（L 在前 / R 在后）。
+    # 不在组内的目标（如被合并规则挪走）保留原分组，避免打乱既有分区。
+    for ref, (target, side) in tagged.items():
+        host_group = next((t for t, refs in groups.items() if target in refs), None)
+        if not host_group or ref not in groups:
+            continue
+        if assigned[ref] != host_group:
+            groups[assigned[ref]].remove(ref)
+            groups[host_group].append(ref)
+            assigned[ref] = host_group
+        refs = groups[host_group]
+        refs.remove(ref)
+        if target in refs:
+            idx = refs.index(target) + (0 if side == "L" else 1)
+            refs.insert(idx, ref)
+        else:
+            refs.append(ref)
 
     ordered = [(t, refs) for t, refs in groups.items() if refs]
     if not ordered:
@@ -871,6 +898,27 @@ def build_sch(design):
         for r, (px, py) in PLACE.items():
             if r in comp_set:
                 pos[r] = (px, py)
+        # 增量串联元件 [SERIES:R2:L]：贴着目标元件摆放（左侧 30mm / 右侧 30mm，
+        # 与 R2→D1 的 30mm 间距一致），让"R4→R2→D1"呈一条直线，而不是扔进
+        # leftover 网格跑到晶振区。
+        for c in comps:
+            mser = re.search(r"\[SERIES:([A-Za-z]{1,3}\d+):([LR])\]", c.get("note", "") or "")
+            if not mser:
+                continue
+            target, side = mser.group(1), mser.group(2)
+            if target in pos:
+                tx, ty = pos[target]
+                step = 24.0 if side == "L" else 30.0
+                sx, sy = (tx - step if side == "L" else tx + step), ty
+                # 若目标左侧/右侧紧贴别的元件（如 R2 左边的 D2），上移一行避让，
+                # 仍保持"在目标左边"的语义，只是错开一行避免符号/标签重叠。
+                for other, (ox, oy) in list(pos.items()):
+                    if other in (c["ref"], target):
+                        continue
+                    if abs(oy - sy) < 12 and abs(ox - sx) < 16:
+                        sy = ty - 18.0
+                        break
+                pos[c["ref"]] = (sx, sy)
         leftover = [c["ref"] for c in comps if c["ref"] not in pos]
         gi = 0
         for r in leftover:

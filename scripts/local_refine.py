@@ -128,6 +128,50 @@ def _change(design, instruction):
     return f"已将 {', '.join(refs)} 的参数改为 {value}"
 
 
+def _insert_series(comps, nets, spec, target, side, value):
+    """把新元件真正串到目标元件的一侧。
+
+    side='L'：插在目标 pin1 之前（电源/上游侧）；side='R'：插在目标 pin2 之后
+    （下游侧）。做法是把目标该脚从原网络摘下，新元件两脚分别接原网络和新网络，
+    新网络另一端接回目标脚——这样才是电气串联，而不是各自悬空接电源。
+    返回 (新元件位号, 说明)；失败返回 (None, 原因)。
+    """
+    typ, _default, prefix, package, _ = spec
+    hit = next((c for c in comps if c["ref"].lower() == target.lower()), None)
+    if not hit:
+        return None, f"没找到要串联的元件：{target}"
+    pin = "1" if side == "L" else "2"
+    old = next((n for n in nets if any(nd["ref"].lower() == target.lower()
+                                       and str(nd["pin"]) == pin for nd in n["nodes"])), None)
+    if not old:
+        return None, f"{target} 的 pin{pin} 没接任何网络，无法在其{'左' if side == 'L' else '右'}侧串联"
+
+    ref = _next_ref(comps, prefix)
+    # 新网络名：沿用原网络前缀 + 目标位号，便于在网表里看出串联关系
+    base = re.sub(r"[+.-]", "", old["name"])
+    new_name = f"{base}_{target}_SER" if base else f"{target}_SER"
+    k = 1
+    while any(n["name"] == new_name for n in nets):
+        k += 1
+        new_name = f"{base}_{target}_SER{k}" if base else f"{target}_SER{k}"
+
+    comps.append({"ref": ref, "type": typ, "value": value, "package": package,
+                  "quantity": 1,
+                  "note": f"按追加要求与 {target} 串联，[SERIES:{target}:{side}]"})
+    # 目标脚从原网络摘下，改接新网络
+    old["nodes"] = [nd for nd in old["nodes"]
+                    if not (nd["ref"].lower() == target.lower() and str(nd["pin"]) == pin)]
+    bridge = {"name": new_name, "nodes": []}
+    nets.append(bridge)
+    if side == "L":
+        old["nodes"].append({"ref": ref, "pin": "1"})        # 上游侧：新电阻左边接原网络
+        bridge["nodes"] = [{"ref": ref, "pin": "2"}, {"ref": target, "pin": pin}]
+    else:
+        old["nodes"].append({"ref": ref, "pin": "2"})        # 下游侧：新电阻右边接原网络
+        bridge["nodes"] = [{"ref": target, "pin": pin}, {"ref": ref, "pin": "1"}]
+    return ref, f"已将 {ref} 串联到 {target} 的{'左' if side == 'L' else '右'}侧（{old['name']} → {ref} → {target}）"
+
+
 def _add(design, instruction):
     comps, nets = design["components"], design.setdefault("nets", [])
     m = re.search(r"(?:再加|添加|增加|加)\s*(.*)", instruction)
@@ -140,7 +184,22 @@ def _add(design, instruction):
     typ, default_val, prefix, package, _ = spec
     count = min(_parse_count(rest), 6)
 
-    vm = re.search(r"(\d+(?:\.\d+)?\s*(?:k|K|M|nF|uF|pF|MHz|Ω)?)", rest)
+    # 拓扑指令：跟某元件串联 + 放在其左/右侧。优先处理，避免被当成普通加元件。
+    sm = re.search(r"(?:跟|与|和|同)\s*([A-Za-z]{1,3}\d+)\s*串联|串联\s*(?:到|在|于)?\s*([A-Za-z]{1,3}\d+)", rest)
+    if sm:
+        target = sm.group(1) or sm.group(2)
+        side = "R" if re.search(r"(?:右边|右侧|后面|后方|下游)", rest) else "L"
+        vm2 = re.search(r"(\d+(?:\.\d+)?\s*(?:k|K|M|nF|uF|pF|MHz|Ω))\b", rest)
+        value = vm2.group(1) if vm2 else default_val
+        results = []
+        for _ in range(count):
+            ref, note = _insert_series(comps, nets, spec, target, side, value)
+            if ref is None:
+                return note
+            results.append(note)
+        return "；".join(results)
+
+    vm = re.search(r"(\d+(?:\.\d+)?\s*(?:k|K|M|nF|uF|pF|MHz|Ω)?)(?!\w)", rest)
     value = vm.group(1) if vm else default_val
     for color in ("绿色", "红色", "蓝色", "黄色", "白色"):
         if color in rest:
