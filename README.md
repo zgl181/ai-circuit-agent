@@ -38,6 +38,7 @@
 - **GND 铺铜**：F.Cu / B.Cu 全板敷铜，自动避让其它网络，一次性连通所有地焊盘
 - **本地网页界面**：零前端框架，原理图 / PCB 预览一键切换，可下载 `.kicad_pcb`
 - **MongoDB 后端（可选）**：设计历史、多用户登录、LLM 结果缓存、多 Agent 共享状态；**未安装 mongod 时自动退化为内存版 mongomock，照样能跑**
+- **离线兜底（平台抖动也不停工）**：学校 LLM 不可达时 5 秒内自动切到内置模板（LED 闪烁 / 双 LED 流水灯 / 电池开关灯 / ATmega 最小系统），一键生成照常出图
 - **六项一键自检**：网表一致性 / ERC / 排版几何 / 导线穿模 / PCB 与 DRC 闭环 / 电源语义
 
 ## 技术架构
@@ -46,8 +47,9 @@
             自然语言需求
                  │
                  ▼
-   scripts/design_agent.py  ── 调用 LLM（OpenAI 兼容 / 学校平台）
-                 │            输出严格 JSON：BOM + nets
+   scripts/design_agent.py  ── 5s 探测学校平台
+                 │             ├─ 可达：LLM 输出严格 JSON（BOM + nets）
+                 │             └─ 不可达：local_design.py 内置模板兜底
                  ▼
           design.json  {board, components[], nets[]}
           ┌──────┴───────────────────────┐
@@ -73,7 +75,9 @@
 │   ├── kicad_pcb.py        # JSON -> KiCad 8 PCB（官方封装 + 分区布局 + 走线 + 铺铜）
 │   ├── drc_loop.py         # DRC 报告 -> 双层 A* 自动补线 -> 重跑 DRC 的闭环编排
 │   ├── verify_schematic.py # 六项一键自检（原理图 A–D + PCB/DRC E + 电源语义 F）
-│   ├── llm_client.py       # LLM 客户端（读取 .env）
+│   ├── llm_client.py       # LLM 客户端（读取 .env，5s 可达性探测 + 重试）
+│   ├── local_design.py     # LLM 不可达时的内置电路模板兜底
+│   ├── templates/          # 内置模板（已验收的 ATmega 最小系统 design.json）
 │   ├── db.py               # MongoDB 数据层（自动退化 mongomock）
 │   ├── app.py              # 本地网页服务（注册/登录/生成/历史/共享状态）
 │   └── web/index.html      # 前端页面
@@ -172,6 +176,7 @@ KiCad 路径不同可用环境变量覆盖：`KICAD_FP_DIR`（封装库）、`KI
 3. 可下载 `.kicad_sch` / `.net` / `.json`
 4. 注册登录后，设计自动存入「我的设计历史」，可回看载入
 5. 相同需求二次生成会**命中 LLM 缓存**，不再重复调用模型
+6. 学校平台连不上时自动用内置模板出图（约 5 秒），不报错、不用改配置
 
 ## MongoDB 后端（可选）
 

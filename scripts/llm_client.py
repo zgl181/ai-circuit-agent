@@ -6,6 +6,8 @@
 """
 import os
 import time
+import urllib.error
+import urllib.request
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -20,7 +22,24 @@ if not API_KEY or API_KEY.startswith("你的"):
 
 # OpenAI SDK 兼容任何 OpenAI 格式端点（学校平台就是）
 # timeout：单次请求超时；max_retries：SDK 自身对连接错误/5xx 的重试次数。
-client = OpenAI(api_key=API_KEY, base_url=BASE_URL, timeout=60.0, max_retries=2)
+client = OpenAI(api_key=API_KEY, base_url=BASE_URL, timeout=20.0, max_retries=1)
+
+
+def is_reachable(timeout: float = 5.0) -> bool:
+    """快速探测平台是否可达，避免平台宕机时让用户干等十几分钟。
+
+    用 urllib 走与 OpenAI SDK 相同的系统代理设置；能收到 HTTP 响应即视为可达
+    （401/403 说明密钥问题但链路通），5xx 或超时视为不可达。
+    """
+    url = BASE_URL.rstrip("/") + "/models"
+    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {API_KEY}"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout):
+            return True
+    except urllib.error.HTTPError as e:
+        return e.code < 500
+    except Exception:
+        return False
 
 
 def _is_transient(exc) -> bool:
@@ -46,7 +65,7 @@ def _is_transient(exc) -> bool:
 def chat(system: str, user: str, temperature: float = 0.2) -> str:
     """发一次对话，返回模型文本；对瞬时网络故障额外重试。"""
     last = None
-    for attempt in range(4):  # SDK 内部已重试 2 次，这里再兜底 4 轮
+    for attempt in range(3):  # SDK 内部已重试 1 次，这里再兜底 3 轮
         try:
             resp = client.chat.completions.create(
                 model=MODEL,
@@ -59,7 +78,7 @@ def chat(system: str, user: str, temperature: float = 0.2) -> str:
             return resp.choices[0].message.content or ""
         except Exception as exc:
             last = exc
-            if not _is_transient(exc) or attempt == 3:
+            if not _is_transient(exc) or attempt == 2:
                 raise
             time.sleep(1.0 + attempt)  # 1s, 2s, 3s 递增退避
     raise last
