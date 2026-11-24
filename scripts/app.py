@@ -211,6 +211,31 @@ class Handler(BaseHTTPRequestHandler):
                      "error": f"{type(e).__name__}: {str(e)[:300]}"}, ensure_ascii=False))
             return
 
+        # 交互修正：在已有设计上应用追加要求，重新排版
+        if u.path == "/api/refine":
+            instruction = (body.get("instruction") or "").strip()
+            design = body.get("design")
+            if not instruction or not design:
+                send(self, 400, json.dumps({"ok": False,
+                     "error": "请提供追加要求和当前设计"}, ensure_ascii=False))
+                return
+            try:
+                new_design, note, source = design_agent.refine(design, instruction)
+                files, svg_ok, svg, kerr = _write_outputs(new_design, instruction)
+                comps, nets = new_design.get("components", []), new_design.get("nets", [])
+                send(self, 200, json.dumps({
+                    "ok": True, "board": new_design.get("board", ""),
+                    "prompt": instruction, "note": note, "source": source,
+                    "components": comps, "nets": nets, "svg": svg,
+                    "svg_ok": svg_ok, "kicad_error": (kerr or "")[:500],
+                    "files": files,
+                    "summary": f"{len(comps)} 个元件 / {len(nets)} 条网络",
+                }, ensure_ascii=False))
+            except Exception as e:
+                send(self, 200, json.dumps({"ok": False,
+                     "error": f"{type(e).__name__}: {str(e)[:300]}"}, ensure_ascii=False))
+            return
+
         # Agent 共享状态写入
         if u.path == "/api/agent/state":
             key = body.get("key")

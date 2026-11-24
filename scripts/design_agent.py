@@ -15,6 +15,7 @@ import os
 from llm_client import chat, is_reachable
 from pinouts import correct_design_pins
 from local_design import local_design
+from local_refine import local_refine
 
 SYSTEM_PROMPT = """你是一个电路板设计助手。用户用自然语言描述一块电路板的需求，
 你必须输出该电路的"设计"JSON，不要任何解释、不要 Markdown 代码块。
@@ -72,6 +73,47 @@ def design(prompt: str) -> dict:
     # 按真实数据手册纠正已知芯片的错误引脚号（如 DIP 脚号误用于 QFN 符号）
     correct_design_pins(data)
     return data
+
+
+REFINE_SYSTEM = """你是一个电路板设计助手。用户会给你一份已有的电路设计 JSON，
+以及一条"追加要求"。请在原设计基础上应用这条要求，输出**修改后的完整设计 JSON**，
+不要任何解释、不要 Markdown 代码块。
+
+JSON 结构固定为：
+{
+  "board": "板子名称",
+  "components": [
+    {"ref": "位号", "type": "元件类别", "value": "参数值", "package": "封装", "quantity": 1, "note": "备注"}
+  ],
+  "nets": [
+    {"name": "网络名", "nodes": [{"ref": "位号", "pin": "引脚号"}]}
+  ]
+}
+要求：
+1. 保留原设计中未被要求修改的所有元件和网络，不要重写整个设计。
+2. 新增元件分配唯一位号（R/C/D/SW/U 等前缀），并接到合理的电源/信号网络。
+3. 删除元件时，同时清理 nets 里指向该位号的节点。
+4. 电源网络名用标准名 VCC / GND / +5V 等。
+5. 只输出 JSON。"""
+
+
+def refine(design: dict, instruction: str) -> tuple:
+    """在已有设计上应用追加要求，返回 (新设计, 变更说明, 来源)。"""
+    snapshot = json.loads(json.dumps(design))  # 深拷贝，失败时不污染原设计
+    try:
+        if not is_reachable():
+            raise RuntimeError("学校 LLM 平台不可达")
+        user = ("当前设计 JSON：\n" + json.dumps(snapshot, ensure_ascii=False)
+                + "\n\n追加要求：" + instruction)
+        data = parse_json(chat(REFINE_SYSTEM, user, temperature=0.1))
+        note, source = "已按追加要求更新设计", "llm"
+    except Exception as exc:
+        print(f"[提示] LLM 不可用（{type(exc).__name__}），使用本地增量修改", file=sys.stderr)
+        data, note = local_refine(snapshot, instruction)
+        data.pop("_source", None)
+        source = "local_refine"
+    correct_design_pins(data)
+    return data, note, source
 
 
 def main():

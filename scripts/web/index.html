@@ -115,6 +115,17 @@
     <div id="nets"></div>
   </div>
 
+  <div class="card" id="refine" style="display:none">
+    <h2>追加要求（在当前电路上修改）</h2>
+    <div class="hint" style="margin-bottom:8px">例如：再加一个 10k 电阻 / 把 LED 换成绿色 / 去掉按钮。修改后会自动重新排版并更新预览。</div>
+    <textarea id="refinePrompt" placeholder="输入你要追加或修改的要求…"></textarea>
+    <div class="row">
+      <button class="gen" id="refineGo">应用修改并重新排版</button>
+      <span class="hint">Ctrl/⌘ + Enter 也可应用</span>
+    </div>
+    <div class="status" id="refineStatus"></div>
+  </div>
+
   <div class="card">
     <h2>我的设计历史</h2>
     <div id="history"><div class="empty">登录后可查看历史记录</div></div>
@@ -215,8 +226,11 @@ function showPreview(kind){
   $("viewSch").style.fontWeight = pcb ? "400" : "600";
   $("viewPcb").style.fontWeight = pcb ? "600" : "400";
 }
+let CURRENT_DESIGN=null;
 function render(d){
+  CURRENT_DESIGN={board:d.board,components:d.components||[],nets:d.nets||[]};
   $("result").style.display="block";
+  $("refine").style.display="block";
   $("summary").textContent=d.summary||"";
   const f=d.files||{};
   $("downloads").innerHTML=["json","net","sch","svg"].map(k=>`<a href="/files/${f[k]}" download>下载 ${f[k]}</a>`).join("")
@@ -251,6 +265,28 @@ async function loadOne(id){
   }catch(e){ setStatus("载入出错："+e,"err"); }
 }
 
+// ---------- 交互修正：在当前设计上追加要求 ----------
+function setRefineStatus(msg, cls){ const s=$("refineStatus"); s.textContent=msg; s.className="status "+(cls||""); }
+async function applyRefine(){
+  const instruction=$("refinePrompt").value.trim();
+  if(!instruction){ setRefineStatus("请先输入追加要求","err"); return; }
+  if(!CURRENT_DESIGN){ setRefineStatus("请先生成一张原理图","err"); return; }
+  const btn=$("refineGo"); btn.disabled=true;
+  setRefineStatus("正在应用修改并重新排版…","run");
+  try{
+    const resp=await api("/api/refine",{method:"POST",
+      body:JSON.stringify({instruction,design:CURRENT_DESIGN})});
+    const d=await resp.json();
+    if(!d.ok){ setRefineStatus("修改失败："+(d.error||"未知错误"),"err"); return; }
+    render(d);
+    $("prompt").value=d.prompt||$("prompt").value;
+    let msg="已修改 ✓ "+(d.note||"")+" ｜"+d.summary;
+    if(d.source==="local_refine") msg+=" （离线规则修改）";
+    setRefineStatus(msg,"ok");
+  }catch(err){ setRefineStatus("请求出错："+err,"err"); }
+  finally{ btn.disabled=false; }
+}
+
 // ---------- 多 Agent 共享状态 ----------
 async function loadAgentState(){
   try{
@@ -269,7 +305,9 @@ async function setAgentState(){
 
 // ---------- 启动 ----------
 go.addEventListener("click",generate);
+$("refineGo").addEventListener("click",applyRefine);
 $("prompt").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter") generate(); });
+$("refinePrompt").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter") applyRefine(); });
 (async()=>{
   const port=location.port;
   if(!(location.protocol.indexOf("http")===0 && port==="8765")){
