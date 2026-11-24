@@ -69,6 +69,17 @@
   .preview{width:100%;overflow:auto;background:#fbfcfe;border:1px solid var(--line);
            border-radius:8px;padding:6px;max-height:420px}
   .preview svg{max-width:100%;height:auto}
+  .preview img{max-width:100%;height:auto;display:block}
+  .pv-tabs{display:flex;gap:6px;margin:8px 0 4px}
+  .pv-tabs button{border:1px solid var(--line);background:#fafbfc;color:var(--muted);
+                  border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer}
+  .pv-tabs button.on{background:var(--brand-soft);color:var(--brand);border-color:#c7dbff;font-weight:600}
+  .thinking{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;padding:4px 0}
+  .dots{display:inline-flex;gap:3px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:var(--brand);
+          animation:blink 1.2s infinite ease-in-out}
+  .dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
   .dl{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
   .dl a{color:var(--brand);text-decoration:none;font-size:12px}
   .dl a:hover{text-decoration:underline}
@@ -208,14 +219,21 @@ async function openConv(id){
   if(!d.turns.length){ clearMessages(); }
   else{
     box.innerHTML="";
-    for(const t of d.turns) appendTurn(t.role,t.text,t.design,t.summary,t.created_at);
+    // 历史轮次的原理图预览统一用当前产物（outputs/design.svg）
+    let histSvg='';
+    try{ histSvg=await (await fetch('/files/design.svg')).text(); }catch(e){}
+    const hasDesign=d.turns.some(t=>t.role==='assistant'&&t.design);
+    for(const t of d.turns){
+      const svg=(t.role==='assistant'&&t.design&&hasDesign)?histSvg:'';
+      appendTurn(t.role,t.text,t.design,t.summary,t.created_at,svg);
+    }
     box.scrollTop=box.scrollHeight;
   }
   await loadConversations();
   $("input").focus();
 }
 
-function appendTurn(role,text,design,summary,when){
+function appendTurn(role,text,design,summary,when,svgHtml){
   const empty=$("emptyState"); if(empty) empty.remove();
   const div=document.createElement("div");
   div.className="msg "+(role==="user"?"user":"assistant");
@@ -224,20 +242,30 @@ function appendTurn(role,text,design,summary,when){
     <div class="who">${role==="user"?"你":"电路设计助手"}<span class="turn-tag">${when?when.slice(5,16).replace('T',' '):''}</span></div>
     <div class="text">${esc(text)}</div>`;
   if(role==="assistant"&&design){
-    const f={}; // 历史轮次没有独立文件，统一指向当前产物
     const comps=design.components||[], nets=design.nets||[];
     const bom='<table><thead><tr><th>位号</th><th>类型</th><th>参数</th><th>封装</th></tr></thead><tbody>'
       +comps.map(c=>`<tr><td>${esc(c.ref)}</td><td>${esc(c.type)}</td><td>${esc(c.value)}</td><td>${esc(c.package)}</td></tr>`).join("")
       +'</tbody></table>';
     const netHtml=nets.map(n=>`<div class="net"><b>${esc(n.name)}</b>：`+
       (n.nodes||[]).map(p=>`${esc(p.ref)}.${esc(p.pin)}`).join(" — ")+"</div>").join("");
+    const uid='pv'+Math.random().toString(36).slice(2,8);
+    const sch=svgHtml||'<div>（预览仅显示最新一轮，可下载文件查看）</div>';
     html+=`<div class="card">
       <div class="status-line">✓ ${esc(summary||"")}</div>
-      <div class="preview">${currentSvg||'<div>（预览仅显示最新一轮，可下载文件查看）</div>'}</div>
+      <div class="pv-tabs">
+        <button class="on" onclick="switchPv('${uid}','sch')">原理图</button>
+        <button onclick="switchPv('${uid}','pcb')">PCB 布局</button>
+      </div>
+      <div class="preview" id="${uid}_sch">${sch}</div>
+      <div class="preview" id="${uid}_pcb" style="display:none">
+        <img src="/files/pcb.svg?t=${Date.now()}" alt="PCB 布局预览"
+             onerror="this.parentNode.innerHTML='（PCB 预览不可用，可下载 .kicad_pcb 在 KiCad 中打开）'">
+      </div>
       <div class="dl">
         <a href="/files/design.json" download>下载 design.json</a>
         <a href="/files/design.net" download>下载 design.net</a>
         <a href="/files/design.kicad_sch" download>下载 .kicad_sch</a>
+        <a href="/files/design.kicad_pcb" download>下载 design.kicad_pcb</a>
         <a href="/files/design.svg" download>下载 .svg</a>
       </div>
       <details><summary>元件清单 / 网表</summary>${bom}<div style="margin-top:8px">${netHtml}</div></details>
@@ -246,7 +274,32 @@ function appendTurn(role,text,design,summary,when){
   html+="</div>";
   div.innerHTML=html;
   $("messages").appendChild(div);
+  return div;
 }
+
+function switchPv(uid,kind){
+  const sch=document.getElementById(uid+'_sch'), pcb=document.getElementById(uid+'_pcb');
+  if(!sch||!pcb) return;
+  sch.style.display = kind==='sch'?'block':'none';
+  pcb.style.display = kind==='pcb'?'block':'none';
+  const tabs=sch.parentNode.querySelectorAll('.pv-tabs button');
+  tabs[0].classList.toggle('on',kind==='sch');
+  tabs[1].classList.toggle('on',kind==='pcb');
+}
+
+function addThinking(){
+  const empty=$("emptyState"); if(empty) empty.remove();
+  const div=document.createElement("div");
+  div.className="msg assistant"; div.id="thinking";
+  div.innerHTML=`<div class="avatar">AI</div><div class="body">
+    <div class="who">电路设计助手</div>
+    <div class="thinking"><span class="dots"><i></i><i></i><i></i></span>
+      <span id="thinkingText">正在生成电路，请稍候…</span></div></div>`;
+  $("messages").appendChild(div);
+  $("messages").scrollTop=$("messages").scrollHeight;
+}
+function setThinking(text){ const el=$("thinkingText"); if(el) el.textContent=text; }
+function clearThinking(){ const el=$("thinking"); if(el) el.remove(); }
 
 let currentSvg='';
 async function send(){
@@ -254,29 +307,28 @@ async function send(){
   const text=$("input").value.trim();
   if(!text){ return; }
   if(!CURRENT){ await newConv(); }   // 没选对话就自动开一个新对话
-  SENDING=true; $("sendBtn").disabled=true;
+  SENDING=true; $("sendBtn").disabled=true; $("sendBtn").textContent="生成中…";
   appendTurn("user",text);
   $("input").value="";
-  $("messages").scrollTop=$("messages").scrollHeight;
+  addThinking();
+  // 分阶段提示，避免用户误以为卡住
+  const stage1=setTimeout(()=>setThinking("正在分析需求并生成电路…"),400);
+  const stage2=setTimeout(()=>setThinking("已生成，正在校验网表并排版预览…"),3500);
   try{
     const d=await (await api("/api/conversations/"+CURRENT+"/message",{
       method:"POST",body:JSON.stringify({text})})).json();
+    clearTimeout(stage1); clearTimeout(stage2); clearThinking();
     if(!d.ok){
       appendTurn("assistant","生成失败："+(d.error||"未知错误"));
     }else{
       currentSvg=(d.svg_ok&&d.svg)?d.svg:'';
-      appendTurn("assistant",d.reply,d,d.summary);
-      // 重绘最后一条，把 SVG 带上
-      const msgs=$("messages").querySelectorAll(".msg.assistant");
-      if(msgs.length){
-        const last=msgs[msgs.length-1];
-        const pv=last.querySelector(".preview");
-        if(pv&&currentSvg) pv.innerHTML=currentSvg;
-      }
+      appendTurn("assistant",d.reply,d,d.summary,null,currentSvg);
       await loadConversations();
     }
-  }catch(e){ appendTurn("assistant","请求出错："+e); }
-  finally{ SENDING=false; $("sendBtn").disabled=false; $("messages").scrollTop=$("messages").scrollHeight; $("input").focus(); }
+  }catch(e){ clearTimeout(stage1); clearTimeout(stage2); clearThinking();
+             appendTurn("assistant","请求出错："+e); }
+  finally{ SENDING=false; $("sendBtn").disabled=false; $("sendBtn").textContent="发送";
+           $("messages").scrollTop=$("messages").scrollHeight; $("input").focus(); }
 }
 
 $("newConv").onclick=newConv;

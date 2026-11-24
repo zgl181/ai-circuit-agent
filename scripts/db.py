@@ -12,6 +12,7 @@
 真实部署：本机先起 mongod（见 README），MONGO_URI 默认 mongodb://localhost:27017。
 """
 import os
+import json
 import hashlib
 import datetime
 import uuid
@@ -169,25 +170,15 @@ def cache_set(prompt: str, design: dict):
     )
 
 
-# ----------------------------- 对话式会话 -----------------------------
-def conv_create(owner: str, title: str = "新对话") -> str:
-    now = datetime.datetime.utcnow()
-    doc = {"owner": owner, "title": title, "design": None,
-           "created_at": now, "updated_at": now}
-    return str(db().conversations.insert_one(doc).inserted_id)
+# ----------------------------- 对话式会话（文件持久化） -----------------------------
+# 对话是核心体验，不能因 mongod 未安装/服务重启而丢失。这里用项目内 JSON 文件
+# 单独持久化，与 users/designs/cache 用的 MongoDB/mongomock 完全解耦。
+import threading
 
-
-def conv_list(owner: str, limit: int = 50):
-    cur = db().conversations.find({"owner": owner}).sort("updated_at", -1).limit(limit)
-    out = []
-    for c in cur:
-        turns = db().turns.count_documents({"conv_id": str(c["_id"])})
-        out.append({
-            "id": str(c["_id"]), "title": c.get("title", "新对话"),
-            "turns": turns,
-            "updated_at": c.get("updated_at", now_iso()),
-        })
-    return out
+_STORE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                           ".workbuddy", "chat_store.json")
+_store_lock = threading.Lock()
+_store = None   # {"conversations": {id: doc}, "turns": {conv_id: [doc, ...]}}
 
 
 def now_iso(d=None):
@@ -195,55 +186,104 @@ def now_iso(d=None):
     return d.isoformat() if hasattr(d, "isoformat") else str(d)
 
 
-def conv_get(conv_id: str, owner: str):
-    from bson import ObjectId
+def _store_load():
+    global _store
+    if _store is not None:
+        return _store
     try:
-        c = db().conversations.find_one({"_id": ObjectId(conv_id), "owner": owner})
+        with open(_STORE_PATH, encoding="utf-8") as f:
+            _store = json.load(f)
+            _store.setdefault("conversations", {})
+            _store.setdefault("turns", {})
     except Exception:
-        return None
-    return c
+        _store = {"conversations": {}, "turns": {}}
+    return _store
+
+
+def _store_save():
+    """调用方须持有 _store_lock。"""
+    os.makedirs(os.path.dirname(_STORE_PATH), exist_ok=True)
+    tmp = _STORE_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(_store, f, ensure_ascii=False)
+    os.replace(tmp, _STORE_PATH)
+
+
+def conv_create(owner: str, title: str = "新对话") -> str:
+    with _store_lock:
+        s = _store_load()
+        cid = uuid.uuid4().hex[:24]
+        now = now_iso()
+        s["conversations"][cid] = {
+            "id": cid, "owner": owner, "title": title, "design": None,
+            "created_at": now, "updated_at": now,
+        }
+        s["turns"][cid] = []
+        _store_save()
+        return cid
+
+
+def conv_list(owner: str, limit: int = 50):
+    with _store_lock:
+        s = _store_load()
+        items = [c for c in s["conversations"].values() if c.get("owner") == owner]
+        items.sort(key=lambda c: c.get("updated_at", ""), reverse=True)
+        return [{
+            "id": c["id"], "title": c.get("title", "新对话"),
+            "turns": len(s["turns"].get(c["id"], [])),
+            "updated_at": c.get("updated_at", ""),
+        } for c in items[:limit]]
+
+
+def conv_get(conv_id: str, owner: str):
+    with _store_lock:
+        s = _store_load()
+        c = s["conversations"].get(conv_id)
+        return c if c and c.get("owner") == owner else None
 
 
 def conv_touch(conv_id: str, design: dict = None, title: str = None):
-    from bson import ObjectId
-    upd = {"updated_at": datetime.datetime.utcnow()}
-    if design is not None:
-        upd["design"] = design
-    if title is not None:
-        upd["title"] = title
-    db().conversations.update_one({"_id": ObjectId(conv_id)}, {"$set": upd})
+    with _store_lock:
+        s = _store_load()
+        c = s["conversations"].get(conv_id)
+        if not c:
+            return
+        c["updated_at"] = now_iso()
+        if design is not None:
+            c["design"] = design
+        if title is not None:
+            c["title"] = title
+        _store_save()
 
 
 def conv_delete(conv_id: str, owner: str):
-    from bson import ObjectId
-    c = conv_get(conv_id, owner)
-    if not c:
-        return False
-    db().conversations.delete_one({"_id": ObjectId(conv_id)})
-    db().turns.delete_many({"conv_id": conv_id})
-    return True
+    with _store_lock:
+        s = _store_load()
+        c = s["conversations"].get(conv_id)
+        if not c or c.get("owner") != owner:
+            return False
+        del s["conversations"][conv_id]
+        s["turns"].pop(conv_id, None)
+        _store_save()
+        return True
 
 
 def turn_add(conv_id: str, role: str, text: str, design: dict = None, summary: str = ""):
-    doc = {
-        "conv_id": conv_id, "role": role, "text": text,
-        "design": design, "summary": summary,
-        "created_at": datetime.datetime.utcnow(),
-    }
-    return str(db().turns.insert_one(doc).inserted_id)
+    with _store_lock:
+        s = _store_load()
+        tid = uuid.uuid4().hex[:24]
+        s["turns"].setdefault(conv_id, []).append({
+            "id": tid, "conv_id": conv_id, "role": role, "text": text,
+            "design": design, "summary": summary, "created_at": now_iso(),
+        })
+        _store_save()
+        return tid
 
 
 def turn_list(conv_id: str):
-    cur = db().turns.find({"conv_id": conv_id}).sort("created_at", 1)
-    out = []
-    for t in cur:
-        out.append({
-            "id": str(t["_id"]), "role": t.get("role", ""),
-            "text": t.get("text", ""), "design": t.get("design"),
-            "summary": t.get("summary", ""),
-            "created_at": now_iso(t.get("created_at")),
-        })
-    return out
+    with _store_lock:
+        s = _store_load()
+        return list(s["turns"].get(conv_id, []))
 
 
 # ----------------------------- 多 Agent 共享状态 -----------------------------
