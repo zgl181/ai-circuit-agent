@@ -117,9 +117,14 @@ def _change(design, instruction):
     if not refs:
         return f"没找到要修改的元件：{m.group(1)}"
     value = m.group(2)
-    for c in comps:
-        if c["ref"] in refs:
-            c["value"] = value
+    changed = [c for c in comps if c["ref"] in refs]
+    # 「把 LED 换成绿色」这类颜色词，补成「绿色 LED」更规范
+    for color in ("绿色", "红色", "蓝色", "黄色", "白色"):
+        if value == color and any("led" in (c.get("type", "") + c.get("value", "")).lower() for c in changed):
+            value = color + " LED"
+            break
+    for c in changed:
+        c["value"] = value
     return f"已将 {', '.join(refs)} 的参数改为 {value}"
 
 

@@ -6,6 +6,8 @@
   - designs     设计历史 {owner, prompt, board, components, nets, files, created_at}
   - cache       LLM 结果缓存 {prompt_hash, design, created_at}
   - agent_state 多 Agent 共享状态（键值）{key, value, updated_at}
+  - conversations 对话 {owner, title, design, created_at, updated_at}（每个会话独立设计）
+  - turns         对话轮次 {conv_id, role, text, design, summary, created_at}
 
 真实部署：本机先起 mongod（见 README），MONGO_URI 默认 mongodb://localhost:27017。
 """
@@ -165,6 +167,83 @@ def cache_set(prompt: str, design: dict):
         {"$set": {"design": design, "created_at": datetime.datetime.utcnow()}},
         upsert=True,
     )
+
+
+# ----------------------------- 对话式会话 -----------------------------
+def conv_create(owner: str, title: str = "新对话") -> str:
+    now = datetime.datetime.utcnow()
+    doc = {"owner": owner, "title": title, "design": None,
+           "created_at": now, "updated_at": now}
+    return str(db().conversations.insert_one(doc).inserted_id)
+
+
+def conv_list(owner: str, limit: int = 50):
+    cur = db().conversations.find({"owner": owner}).sort("updated_at", -1).limit(limit)
+    out = []
+    for c in cur:
+        turns = db().turns.count_documents({"conv_id": str(c["_id"])})
+        out.append({
+            "id": str(c["_id"]), "title": c.get("title", "新对话"),
+            "turns": turns,
+            "updated_at": c.get("updated_at", now_iso()),
+        })
+    return out
+
+
+def now_iso(d=None):
+    d = d or datetime.datetime.utcnow()
+    return d.isoformat() if hasattr(d, "isoformat") else str(d)
+
+
+def conv_get(conv_id: str, owner: str):
+    from bson import ObjectId
+    try:
+        c = db().conversations.find_one({"_id": ObjectId(conv_id), "owner": owner})
+    except Exception:
+        return None
+    return c
+
+
+def conv_touch(conv_id: str, design: dict = None, title: str = None):
+    from bson import ObjectId
+    upd = {"updated_at": datetime.datetime.utcnow()}
+    if design is not None:
+        upd["design"] = design
+    if title is not None:
+        upd["title"] = title
+    db().conversations.update_one({"_id": ObjectId(conv_id)}, {"$set": upd})
+
+
+def conv_delete(conv_id: str, owner: str):
+    from bson import ObjectId
+    c = conv_get(conv_id, owner)
+    if not c:
+        return False
+    db().conversations.delete_one({"_id": ObjectId(conv_id)})
+    db().turns.delete_many({"conv_id": conv_id})
+    return True
+
+
+def turn_add(conv_id: str, role: str, text: str, design: dict = None, summary: str = ""):
+    doc = {
+        "conv_id": conv_id, "role": role, "text": text,
+        "design": design, "summary": summary,
+        "created_at": datetime.datetime.utcnow(),
+    }
+    return str(db().turns.insert_one(doc).inserted_id)
+
+
+def turn_list(conv_id: str):
+    cur = db().turns.find({"conv_id": conv_id}).sort("created_at", 1)
+    out = []
+    for t in cur:
+        out.append({
+            "id": str(t["_id"]), "role": t.get("role", ""),
+            "text": t.get("text", ""), "design": t.get("design"),
+            "summary": t.get("summary", ""),
+            "created_at": now_iso(t.get("created_at")),
+        })
+    return out
 
 
 # ----------------------------- 多 Agent 共享状态 -----------------------------

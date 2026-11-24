@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 电路板设计 · 对话工作台</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --panel:#ffffff; --side:#f2f4f8; --line:#e5e9f0;
+    --text:#1f2933; --muted:#6b7785; --brand:#2563eb; --brand-soft:#eaf1ff;
+    --ok:#15a34a; --err:#dc2626; --bubble:#f4f6fa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+       background:var(--bg);color:var(--text);font-size:14px;line-height:1.6}
+  .app{display:flex;height:100vh;overflow:hidden}
+
+  /* ---------- 左侧会话栏 ---------- */
+  .sidebar{width:260px;flex:0 0 260px;background:var(--side);border-right:1px solid var(--line);
+           display:flex;flex-direction:column}
+  .side-head{padding:16px;border-bottom:1px solid var(--line)}
+  .side-head h1{margin:0;font-size:16px}
+  .side-head p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+  .new-btn{width:100%;margin-top:12px;background:var(--brand);color:#fff;border:0;border-radius:8px;
+           padding:9px;font-size:13px;font-weight:600;cursor:pointer}
+  .new-btn:disabled{opacity:.6}
+  .conv-list{flex:1;overflow:auto;padding:8px}
+  .conv-item{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;position:relative}
+  .conv-item:hover{background:#e8edf5}
+  .conv-item.active{background:var(--brand-soft);color:var(--brand);font-weight:600}
+  .conv-item .t{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:20px}
+  .conv-item .m{font-size:11px;color:var(--muted);margin-top:2px}
+  .conv-del{position:absolute;right:6px;top:8px;border:0;background:transparent;color:var(--muted);
+            cursor:pointer;font-size:14px;padding:2px 5px;border-radius:4px}
+  .conv-del:hover{background:#ffdede;color:var(--err)}
+  .side-foot{padding:12px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+  .side-foot a{color:var(--brand);text-decoration:none}
+  .link-row{display:flex;gap:10px;margin-top:6px}
+
+  /* ---------- 主对话区 ---------- */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel);
+          display:flex;align-items:center;justify-content:space-between}
+  .topbar .title{font-weight:600}
+  .topbar .hint{font-size:12px;color:var(--muted)}
+  .messages{flex:1;overflow:auto;padding:24px 20px;max-width:980px;width:100%;margin:0 auto}
+  .empty-state{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+               color:var(--muted);text-align:center}
+  .empty-state h2{color:var(--text);font-size:20px;margin:0 0 8px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px;max-width:640px}
+  .chip{background:var(--brand-soft);color:var(--brand);border:1px solid #c7dbff;border-radius:999px;
+        padding:6px 14px;font-size:13px;cursor:pointer}
+  .chip:hover{background:#dce9ff}
+
+  .msg{margin-bottom:22px;display:flex;gap:12px}
+  .msg .avatar{width:30px;height:30px;flex:0 0 30px;border-radius:8px;display:flex;
+               align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+  .msg.user .avatar{background:#64748b}
+  .msg.assistant .avatar{background:var(--brand)}
+  .msg .body{flex:1;min-width:0}
+  .msg .who{font-weight:600;font-size:13px;margin-bottom:4px}
+  .msg .text{white-space:pre-wrap;word-break:break-word}
+  .msg.user .text{background:var(--bubble);border-radius:10px;padding:8px 12px;display:inline-block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:12px 14px;margin-top:10px}
+  .card h3{margin:0 0 8px;font-size:14px}
+  .status-line{font-size:12px;color:var(--ok);margin-bottom:8px}
+  .preview{width:100%;overflow:auto;background:#fbfcfe;border:1px solid var(--line);
+           border-radius:8px;padding:6px;max-height:420px}
+  .preview svg{max-width:100%;height:auto}
+  .dl{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .dl a{color:var(--brand);text-decoration:none;font-size:12px}
+  .dl a:hover{text-decoration:underline}
+  details{margin-top:8px}
+  summary{cursor:pointer;font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+  th,td{border:1px solid var(--line);padding:4px 7px;text-align:left}
+  th{background:#f0f4fa}
+  .turn-tag{font-size:11px;color:var(--muted);margin-left:8px;font-weight:400}
+
+  /* ---------- 输入区 ---------- */
+  .composer{padding:14px 20px 18px;border-top:1px solid var(--line);background:var(--panel)}
+  .composer-inner{max-width:980px;margin:0 auto}
+  .composer textarea{width:100%;min-height:52px;max-height:140px;resize:vertical;padding:10px 12px;
+     border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;outline:none}
+  .composer textarea:focus{border-color:var(--brand)}
+  .composer .row{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+  .send{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:9px 20px;
+        font-size:13px;font-weight:600;cursor:pointer}
+  .send:disabled{opacity:.55;cursor:not-allowed}
+  .tip{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="side-head">
+      <h1>AI 电路板设计</h1>
+      <p>每个对话独立，改图互不影响</p>
+      <button class="new-btn" id="newConv">+ 新建对话</button>
+    </div>
+    <div class="conv-list" id="convList"></div>
+    <div class="side-foot">
+      <div>✅ 对话隔离 · 离线可生成</div>
+      <div class="link-row"><a href="/">旧版界面</a><a href="/files/design.kicad_sch">下载原理图</a></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="title" id="convTitle">新对话</div>
+      <div class="hint">第一条消息生成电路，之后输入「再加一个电阻」即可在当前图上修改</div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="empty-state" id="emptyState">
+        <h2>这个对话还是空的</h2>
+        <div>用一句话描述你想要的电路，或点下面的快捷输入开始</div>
+        <div class="chips" id="chips">
+          <span class="chip">LED 闪烁电路</span>
+          <span class="chip">双 LED 流水灯</span>
+          <span class="chip">ATmega328P 最小系统</span>
+          <span class="chip">电池供电开关灯</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-inner">
+        <textarea id="input" placeholder="描述电路需求；在已有对话里可输入「再加一个 10k 电阻」「把 LED 换成绿色」「去掉按钮」…"></textarea>
+        <div class="row">
+          <span class="tip">Enter 发送 · Shift+Enter 换行</span>
+          <button class="send" id="sendBtn">发送</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let CURRENT = null;        // 当前会话 id
+let SENDING = false;
+const EXAMPLES = {
+  "LED 闪烁电路":"设计一个 LED 闪烁电路，包含 1 个 LED、1 个限流电阻、1 个轻触按钮、1 个 2 节电池座",
+  "双 LED 流水灯":"设计双 LED 闪烁电路：2 个 LED、2 个限流电阻、1 个轻触开关、1 个 2 节电池座",
+  "ATmega328P 最小系统":"设计一个 ATmega328P 单片机最小系统：晶振、复位按钮、电源指示灯 LED、限流电阻、电池座",
+  "电池供电开关灯":"设计一个电池供电的照明电路：1 个 LED、1 个限流电阻、1 个拨动开关、1 个电池座"
+};
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+function api(path,opts){ opts=opts||{}; opts.headers=opts.headers||{};
+  if(opts.body&&!opts.headers["Content-Type"]) opts.headers["Content-Type"]="application/json";
+  return fetch(path,opts); }
+
+async function loadConversations(){
+  try{
+    const d=await (await api("/api/conversations")).json();
+    if(!d.ok) return;
+    $("convList").innerHTML=d.items.map(c=>`
+      <div class="conv-item ${c.id===CURRENT?'active':''}" onclick="openConv('${c.id}')">
+        <div class="t">${esc(c.title)}</div>
+        <div class="m">${c.turns} 轮 · ${(c.updated_at||'').slice(5,16).replace('T',' ')}</div>
+        <button class="conv-del" onclick="event.stopPropagation();delConv('${c.id}')" title="删除">×</button>
+      </div>`).join("");
+  }catch(e){}
+}
+
+async function newConv(){
+  if(SENDING) return;
+  const d=await (await api("/api/conversations",{method:"POST",
+    body:JSON.stringify({title:"新对话"})})).json();
+  if(!d.ok){ alert("新建失败："+d.error); return; }
+  await loadConversations();
+  await openConv(d.conv_id);
+  $("input").focus();
+}
+
+async function delConv(id){
+  if(!confirm("删除这个对话及其所有修改记录？")) return;
+  await api("/api/conversations/"+id+"/delete",{method:"POST",body:"{}"});
+  if(CURRENT===id){ CURRENT=null; clearMessages(); }
+  await loadConversations();
+}
+
+function clearMessages(){
+  $("messages").innerHTML=`<div class="empty-state" id="emptyState">
+    <h2>这个对话还是空的</h2>
+    <div>用一句话描述你想要的电路，或点下面的快捷输入开始</div>
+    <div class="chips" id="chips">${Object.keys(EXAMPLES).map(k=>`<span class="chip">${k}</span>`).join("")}</div>
+  </div>`;
+  bindChips();
+}
+
+function bindChips(){
+  const box=$("chips"); if(!box) return;
+  box.onclick=e=>{ if(e.target.classList.contains("chip")){
+    $("input").value=EXAMPLES[e.target.textContent]||""; $("input").focus(); }};
+}
+
+async function openConv(id){
+  CURRENT=id;
+  const d=await (await api("/api/conversations/"+id+"/turns")).json();
+  if(!d.ok){ alert("载入失败："+d.error); return; }
+  $("convTitle").textContent=d.title||"新对话";
+  const box=$("messages");
+  if(!d.turns.length){ clearMessages(); }
+  else{
+    box.innerHTML="";
+    for(const t of d.turns) appendTurn(t.role,t.text,t.design,t.summary,t.created_at);
+    box.scrollTop=box.scrollHeight;
+  }
+  await loadConversations();
+  $("input").focus();
+}
+
+function appendTurn(role,text,design,summary,when){
+  const empty=$("emptyState"); if(empty) empty.remove();
+  const div=document.createElement("div");
+  div.className="msg "+(role==="user"?"user":"assistant");
+  const avatar=role==="user"?"你":"AI";
+  let html=`<div class="avatar">${avatar}</div><div class="body">
+    <div class="who">${role==="user"?"你":"电路设计助手"}<span class="turn-tag">${when?when.slice(5,16).replace('T',' '):''}</span></div>
+    <div class="text">${esc(text)}</div>`;
+  if(role==="assistant"&&design){
+    const f={}; // 历史轮次没有独立文件，统一指向当前产物
+    const comps=design.components||[], nets=design.nets||[];
+    const bom='<table><thead><tr><th>位号</th><th>类型</th><th>参数</th><th>封装</th></tr></thead><tbody>'
+      +comps.map(c=>`<tr><td>${esc(c.ref)}</td><td>${esc(c.type)}</td><td>${esc(c.value)}</td><td>${esc(c.package)}</td></tr>`).join("")
+      +'</tbody></table>';
+    const netHtml=nets.map(n=>`<div class="net"><b>${esc(n.name)}</b>：`+
+      (n.nodes||[]).map(p=>`${esc(p.ref)}.${esc(p.pin)}`).join(" — ")+"</div>").join("");
+    html+=`<div class="card">
+      <div class="status-line">✓ ${esc(summary||"")}</div>
+      <div class="preview">${currentSvg||'<div>（预览仅显示最新一轮，可下载文件查看）</div>'}</div>
+      <div class="dl">
+        <a href="/files/design.json" download>下载 design.json</a>
+        <a href="/files/design.net" download>下载 design.net</a>
+        <a href="/files/design.kicad_sch" download>下载 .kicad_sch</a>
+        <a href="/files/design.svg" download>下载 .svg</a>
+      </div>
+      <details><summary>元件清单 / 网表</summary>${bom}<div style="margin-top:8px">${netHtml}</div></details>
+    </div>`;
+  }
+  html+="</div>";
+  div.innerHTML=html;
+  $("messages").appendChild(div);
+}
+
+let currentSvg='';
+async function send(){
+  if(SENDING) return;
+  const text=$("input").value.trim();
+  if(!text){ return; }
+  if(!CURRENT){ await newConv(); }   // 没选对话就自动开一个新对话
+  SENDING=true; $("sendBtn").disabled=true;
+  appendTurn("user",text);
+  $("input").value="";
+  $("messages").scrollTop=$("messages").scrollHeight;
+  try{
+    const d=await (await api("/api/conversations/"+CURRENT+"/message",{
+      method:"POST",body:JSON.stringify({text})})).json();
+    if(!d.ok){
+      appendTurn("assistant","生成失败："+(d.error||"未知错误"));
+    }else{
+      currentSvg=(d.svg_ok&&d.svg)?d.svg:'';
+      appendTurn("assistant",d.reply,d,d.summary);
+      // 重绘最后一条，把 SVG 带上
+      const msgs=$("messages").querySelectorAll(".msg.assistant");
+      if(msgs.length){
+        const last=msgs[msgs.length-1];
+        const pv=last.querySelector(".preview");
+        if(pv&&currentSvg) pv.innerHTML=currentSvg;
+      }
+      await loadConversations();
+    }
+  }catch(e){ appendTurn("assistant","请求出错："+e); }
+  finally{ SENDING=false; $("sendBtn").disabled=false; $("messages").scrollTop=$("messages").scrollHeight; $("input").focus(); }
+}
+
+$("newConv").onclick=newConv;
+$("sendBtn").onclick=send;
+$("input").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(); }
+});
+bindChips();
+(async()=>{
+  await loadConversations();
+  const items=JSON.parse(JSON.stringify(await (await api("/api/conversations")).json()));
+  if(items.ok&&items.items.length) await openConv(items.items[0].id);
+})();
+</script>
+</body>
+</html>

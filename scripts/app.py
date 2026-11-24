@@ -25,6 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT = os.path.dirname(HERE)          # 项目根
 OUT = os.path.join(PROJECT, "outputs")  # 产物目录
 WEB_INDEX = os.path.join(HERE, "web", "index.html")
+WEB_CHAT = os.path.join(HERE, "web", "chat.html")
 KICAD_CLI = os.environ.get("KICAD_CLI", r"C:/Users/24013/Desktop/工具/bin/kicad-cli")
 
 sys.path.insert(0, HERE)
@@ -144,6 +145,13 @@ class Handler(BaseHTTPRequestHandler):
                 send(self, 500, "index.html 缺失"); return
             send(self, 200, html, "text/html; charset=utf-8")
             return
+        if u.path in ("/chat", "/chat.html"):
+            try:
+                html = open(WEB_CHAT, encoding="utf-8").read()
+            except FileNotFoundError:
+                send(self, 500, "chat.html 缺失"); return
+            send(self, 200, html, "text/html; charset=utf-8")
+            return
         if u.path.startswith("/files/"):
             fp = os.path.join(OUT, os.path.basename(u.path))
             if os.path.isfile(fp):
@@ -160,6 +168,26 @@ class Handler(BaseHTTPRequestHandler):
             owner = db.user_by_token(token) or "guest"
             send(self, 200, json.dumps({"ok": True, "owner": owner,
                  "items": db.list_designs(owner)}, ensure_ascii=False))
+            return
+        # 对话列表
+        if u.path == "/api/conversations":
+            token = get_token(self.headers, {})
+            owner = db.user_by_token(token) or "guest"
+            send(self, 200, json.dumps({"ok": True,
+                 "items": db.conv_list(owner)}, ensure_ascii=False))
+            return
+        # 单个对话的轮次
+        m = re.match(r"^/api/conversations/([0-9a-fA-F]{24})/turns$", u.path)
+        if m:
+            token = get_token(self.headers, {})
+            owner = db.user_by_token(token) or "guest"
+            conv = db.conv_get(m.group(1), owner)
+            if not conv:
+                send(self, 404, json.dumps({"ok": False, "error": "对话不存在"}, ensure_ascii=False)); return
+            send(self, 200, json.dumps({"ok": True,
+                 "conv_id": m.group(1), "title": conv.get("title", ""),
+                 "design": conv.get("design"),
+                 "turns": db.turn_list(m.group(1))}, ensure_ascii=False))
             return
         # Agent 共享状态
         if u.path == "/api/agent/state":
@@ -230,6 +258,70 @@ class Handler(BaseHTTPRequestHandler):
                     "svg_ok": svg_ok, "kicad_error": (kerr or "")[:500],
                     "files": files,
                     "summary": f"{len(comps)} 个元件 / {len(nets)} 条网络",
+                }, ensure_ascii=False))
+            except Exception as e:
+                send(self, 200, json.dumps({"ok": False,
+                     "error": f"{type(e).__name__}: {str(e)[:300]}"}, ensure_ascii=False))
+            return
+
+        # ---- 对话式会话 ----
+        # 新建对话
+        if u.path == "/api/conversations":
+            token = get_token(self.headers, body)
+            owner = db.user_by_token(token) or "guest"
+            cid = db.conv_create(owner, (body.get("title") or "新对话").strip())
+            send(self, 200, json.dumps({"ok": True, "conv_id": cid}, ensure_ascii=False))
+            return
+
+        # 删除对话
+        m = re.match(r"^/api/conversations/([0-9a-fA-F]{24})/delete$", u.path)
+        if m:
+            token = get_token(self.headers, body)
+            owner = db.user_by_token(token) or "guest"
+            send(self, 200, json.dumps({"ok": db.conv_delete(m.group(1), owner)},
+                 ensure_ascii=False))
+            return
+
+        # 在对话里发一条消息：首条=生成，后续=在当前会话设计上微调
+        m = re.match(r"^/api/conversations/([0-9a-fA-F]{24})/message$", u.path)
+        if m:
+            cid = m.group(1)
+            token = get_token(self.headers, body)
+            owner = db.user_by_token(token) or "guest"
+            conv = db.conv_get(cid, owner)
+            if not conv:
+                send(self, 404, json.dumps({"ok": False, "error": "对话不存在"}, ensure_ascii=False)); return
+            text = (body.get("text") or "").strip()
+            if not text:
+                send(self, 400, json.dumps({"ok": False, "error": "请输入需求"}, ensure_ascii=False)); return
+            try:
+                design = conv.get("design")
+                if design:
+                    # 会话内后续消息：微调，只作用于本会话自己的 design
+                    new_design, note, source = design_agent.refine(design, text)
+                    role_reply = note
+                else:
+                    # 会话第一条消息：全新生成，命中缓存也只写入本会话
+                    new_design = design_agent.design(text)
+                    note = "已根据需求生成电路"
+                    role_reply = note
+                    source = new_design.get("_source", "llm")
+
+                files, svg_ok, svg, kerr = _write_outputs(new_design, text)
+                summary = f"{len(new_design.get('components', []))} 个元件 / {len(new_design.get('nets', []))} 条网络"
+                db.turn_add(cid, "user", text)
+                db.turn_add(cid, "assistant", role_reply, new_design, summary)
+                title = conv.get("title")
+                if not title or title == "新对话":
+                    title = (text[:22] + "…") if len(text) > 22 else text
+                db.conv_touch(cid, design=new_design, title=title)
+                send(self, 200, json.dumps({
+                    "ok": True, "conv_id": cid, "board": new_design.get("board", ""),
+                    "text": text, "reply": role_reply, "source": source,
+                    "components": new_design.get("components", []),
+                    "nets": new_design.get("nets", []), "svg": svg,
+                    "svg_ok": svg_ok, "kicad_error": (kerr or "")[:500],
+                    "files": files, "summary": summary,
                 }, ensure_ascii=False))
             except Exception as e:
                 send(self, 200, json.dumps({"ok": False,
