@@ -544,33 +544,58 @@ def adaptive_layout(comps, comp_pins, valid_nets):
     if not ordered:
         return {}, []
 
+    # 小组合并：当功能组过多(≥5)时，A4 上横排会挤压到超纸、竖排又空旷。
+    # 把元件很少(≤2)的次要组(时钟/指示/用户输入的零星元件)合并成一个 SUPPORT 组，
+    # 保留 MAIN CONTROL 与 CONNECTOR 独立，形成 3 大块均衡横排。
+    if len(ordered) >= 5:
+        keep_titles = {"MAIN CONTROL", "CONNECTOR / I-O"}
+        support_refs = []
+        merged = []
+        for t, refs in ordered:
+            if t not in keep_titles and len(refs) <= 2:
+                support_refs.extend(refs)
+            else:
+                merged.append((t, refs))
+        if support_refs:
+            merged.append(("SUPPORT / PASSIVE", support_refs))
+        ordered = merged
+
     def half(ref):
         pins = list(comp_pins.get(ref, {}).values())
         if not pins:
             return (6.0, 6.0)
         xs = [p[0] for p in pins]
         ys = [p[1] for p in pins]
-        return (max(abs(min(xs)), abs(max(xs))) + 1.0,
-                max(abs(min(ys)), abs(max(ys))) + 1.0)
+        hx = max(abs(min(xs)), abs(max(xs))) + 1.0
+        hy = max(abs(min(ys)), abs(max(ys))) + 1.0
+        # 多引脚芯片(DIP-28 等 >8 脚)：引脚名(如 ICSP_RESET)画在引脚端点外侧，
+        # 占约 13mm 宽；不计入就会顶破分区框左/右边线。2 脚阻容/排针不加，
+        # 否则排针的大 half 会撑爆整列宽度、把分区框顶出纸外。
+        if len(pins) > 8:
+            hx += 13.0
+        return (hx, hy)
 
-    inner, title_h, gap_x, gap_y = 7.0, 9.0, 10.0, 12.0
+    # 水平留白 inner_x 兼顾容纳最左/最右元件朝外展开的网络标签(约 13mm)；
+    # 垂直留白 inner_y 保持紧凑，避免多行时顶到标题栏。
+    inner_x, inner_y, title_h, gap_x, gap_y = 15.0, 11.0, 9.0, 10.0, 8.0
     # 单元高上限：DIP-28 这类大芯片 half 高 ~18mm，若按它撑高整行会把框顶到
     # 标题栏外。用上限 + 居中放置，大芯片本身仍有安全区 clamp 兜底。
     CH_CAP = 34.0
+    CW_CAP = 74.0  # DIP-28 含引脚名半宽约 33mm，×2+6=72，需放宽才能不溢出框
     specs = []
     for title, refs in ordered:
         per_row = min(4, len(refs))
-        cw = min(46.0, max(half(r)[0] * 2 + 6 for r in refs))
+        cw = min(CW_CAP, max(half(r)[0] * 2 + 6 for r in refs))
         ch = min(CH_CAP, max(half(r)[1] * 2 + 6 for r in refs))
         rows_n = (len(refs) + per_row - 1) // per_row
         specs.append({"title": title, "refs": refs, "per_row": per_row,
                       "cw": cw, "ch": ch,
-                      "gw": per_row * cw + 2 * inner,
-                      "gh": title_h + rows_n * ch + 2 * inner})
+                      "gw": per_row * cw + 2 * inner_x,
+                      "gh": title_h + rows_n * ch + 2 * inner_y})
 
     # 垂直方向统一封顶到 168：KiCad 标题栏固定在右下角（约 X≥178, Y≥172），
     # 用 168 全局封顶可保证任何分组都不会压到标题栏；水平仍按整幅居中。
-    X0, X1, Y0, Y1 = 18.0, 290.0, 18.0, 168.0
+    X0, X1, Y0, Y1 = 18.0, 292.0, 18.0, 170.0
     avail_w, avail_h = X1 - X0, Y1 - Y0
 
     # 列数自适应：优先"横向铺开"（列多、行少）——论文式功能分区是从左到右读的，
@@ -579,6 +604,7 @@ def adaptive_layout(comps, comp_pins, valid_nets):
     n = len(specs)
     best = None
     fallback = None
+    fallback_score = None
     for cols in range(min(n, 4), 0, -1):
         rows = (n + cols - 1) // cols
         colw = [0.0] * cols
@@ -590,11 +616,13 @@ def adaptive_layout(comps, comp_pins, valid_nets):
         tw = sum(colw) + gap_x * (cols - 1)
         th = sum(rowh) + gap_y * (rows - 1)
         cand = (cols, rows, colw, rowh, tw, th)
-        if fallback is None:
-            fallback = cand
         if th <= avail_h and tw <= avail_w:
             best = cand
             break
+        # 都装不下时的兜底：选"超界比例"最小的候选，避免选到严重超纸的方案。
+        score = max(tw / avail_w, th / avail_h)
+        if fallback_score is None or score < fallback_score:
+            fallback_score, fallback = score, cand
     if best is None:
         best = fallback
     cols, rows, colw, rowh, total_w, total_h = best
@@ -610,18 +638,28 @@ def adaptive_layout(comps, comp_pins, valid_nets):
     ox = X0 + max(0.0, (avail_w - total_w) / 2.0)
     oy = Y0 + max(0.0, (avail_h - total_h) / 2.0)
 
+    # 最后一行若只有一个框（如 4+1 布局），不让它继承第 0 列被大芯片撑出的
+    # 宽度而显得又宽又空：改用自身内容宽并在整幅中居中。
+    last_row_start = (rows - 1) * cols
+    lone_last = (len(specs) - last_row_start == 1 and rows > 1)
+
     pos, zones = {}, []
     for i, s in enumerate(specs):
         rr, cc = divmod(i, cols)
-        bx = ox + sum(colw[:cc]) + gap_x * cc
         by = oy + sum(rowh[:rr]) + gap_y * rr
-        bw, bh = colw[cc], rowh[rr]
+        bh = rowh[rr]
+        if lone_last and i == len(specs) - 1:
+            bw = s["gw"]
+            bx = ox + (total_w - bw) / 2.0
+        else:
+            bx = ox + sum(colw[:cc]) + gap_x * cc
+            bw = colw[cc]
         zones.append((bx, by, bx + bw, by + bh, s["title"]))
         refs, pr, cw, ch = s["refs"], s["per_row"], s["cw"], s["ch"]
         used_w = pr * cw
         used_h = ((len(refs) + pr - 1) // pr) * ch
         gx = bx + (bw - used_w) / 2.0
-        gy = by + title_h + inner + max(0.0, (bh - title_h - 2 * inner - used_h) / 2.0)
+        gy = by + title_h + inner_y + max(0.0, (bh - title_h - 2 * inner_y - used_h) / 2.0)
         for j, ref in enumerate(refs):
             r, c = divmod(j, pr)
             pos[ref] = (gx + c * cw + cw / 2.0, gy + r * ch + ch / 2.0)
